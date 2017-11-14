@@ -4,6 +4,7 @@ from flask import request
 from flask import send_from_directory
 from flask import jsonify
 from flask import render_template
+from flask import jsonify
 import helpers.util as util
 import helpers.sentence2vec as s2v
 
@@ -94,13 +95,13 @@ def send_public(path):
 def search():
 
     query = str(request.args.get('query'))
-    pdf = None #str(request.args.get('pdf')
+    pdf = None #str(request.args.get('pdf'))
 
     sentence = util.query_to_sentence(query)
     vector = s2v.sentence_to_vec([sentence],EMBEDDING_DIM,from_persisted=True)
 
 
-    answers = retrieve_closest_passages(vector,vectors=sentence_vectors,from_pdf=pdf,num_passages=10)
+    answers = retrieve_closest_passages(vector,vectors=sentence_vectors,from_pdf=pdf,num_passages=20)
 
     # distances = distance.cdist(sentence_vectors,vector,'euclidean');
     # closest_indexes = sorted(range(len(distances)),key= lambda k: distances[k])
@@ -114,7 +115,6 @@ def search():
     # return render_template('results.html', results = {"query":query,"data":answers});
     results = {"query":query,"data":answers}
     return jsonify(results)
-
 
 
 if __name__ == "__main__":
