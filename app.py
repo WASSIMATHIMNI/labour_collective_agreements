@@ -42,6 +42,7 @@ from scipy.spatial import distance
 def retrieve_vectors_from_pdf(vectors,from_pdf):
      return [(index,vector) for index,vector in enumerate(vectors) if idx_to_filename[int(idx_to_metadata[index].split("-")[0])] == from_pdf]
 
+
 def retrieve_closest_passages(vector,vectors=None,from_pdf=None,num_passages=3):
     answers = []
 
@@ -57,15 +58,31 @@ def retrieve_closest_passages(vector,vectors=None,from_pdf=None,num_passages=3):
             closest_indexes = sorted(range(len(distances)),key= lambda k: distances[k]);
             if len(closest_indexes) > num_passages:
                 for index in range(num_passages):
+
                     repo_idx = idx_to_repoidx[closest_indexes[index]]
-                    answers.append([clean_passages[repo_idx],idx_to_metadata[repo_idx]])
+
+                    filename_index = int(idx_to_metadata[repo_idx].split("-")[0])
+                    filename = idx_to_filename[filename_index]
+
+                    url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
+                    if filename[-1] == 'a':
+                        url = url.format("eng","agreements",filename[:2],filename)
+                    else:
+                        url = url.format("fra","conventions",filename[:2],filename)
+
+                    answers.append({
+                        "raw_passage":raw_passages[repo_idx],
+                        "clean_passage":clean_passages[repo_idx],
+                        "metadata":idx_to_metadata[repo_idx],
+                        "pdf_url": url
+                    })
     else:
         distances = distance.cdist(vectors,vector)
         closest_indexes = sorted(range(len(distances)),key= lambda k: distances[k]);
         for index in range(num_passages):
 
-            filename = idx_to_filename[int(idx_to_metadata[index].split("-")[0])]
-
+            filename_index = int(idx_to_metadata[closest_indexes[index]].split("-")[0])
+            filename = idx_to_filename[filename_index]
 
             url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
             if filename[-1] == 'a':
@@ -83,6 +100,7 @@ def retrieve_closest_passages(vector,vectors=None,from_pdf=None,num_passages=3):
     return answers
 
 
+
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -95,7 +113,7 @@ def send_public(path):
 def search():
 
     query = str(request.args.get('query'))
-    pdf = None #str(request.args.get('pdf'))
+    pdf = str(request.args.get('pdf'))
 
     sentence = util.query_to_sentence(query)
     vector = s2v.sentence_to_vec([sentence],EMBEDDING_DIM,from_persisted=True)
