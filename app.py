@@ -150,8 +150,8 @@ def search():
     query = str(request.args.get('query'))
 
     pdf = None
-    if request.args.get('pdf') is not None: pdf = str(request.args.get('pdf'))
-
+    if request.args.get('pdf'): pdf = str(request.args.get('pdf'))
+	
     num_results = 25  # str(request.args.get("num_results"))
     is_grepped = True  # str(request.args.get("with_grep"))
 
