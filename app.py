@@ -113,7 +113,11 @@ def send_public(path):
 def search():
 
     query = str(request.args.get('query'))
-    pdf = str(request.args.get('pdf'))
+    if str(request.args.get('pdf')):
+        pdf = str(request.args.get('pdf'))
+    else:
+        pdf = None
+    
 
     sentence = util.query_to_sentence(query)
     vector = s2v.sentence_to_vec([sentence],EMBEDDING_DIM,from_persisted=True)
