@@ -7,7 +7,7 @@ from flask import render_template
 from flask import jsonify
 import helpers.util as util
 import helpers.sentence2vec as s2v
-
+from nltk.corpus import stopwords
 import numpy as np
 import h5py
 
@@ -43,7 +43,7 @@ def retrieve_vectors_from_pdf(vectors,from_pdf):
      return [(index,vector) for index,vector in enumerate(vectors) if idx_to_filename[int(idx_to_metadata[index].split("-")[0])] == from_pdf]
 
 
-def retrieve_closest_passages(vector,vectors=None,from_pdf=None,num_passages=3):
+def retrieve_closest_passages(vector,vectors=None,from_pdf=None,num_passages=10):
     answers = []
 
     if vectors is None: vectors = sentence_vectors
@@ -114,12 +114,46 @@ def search():
 
     query = str(request.args.get('query'))
     pdf = str(request.args.get('pdf'))
+    num_results = 25 #str(request.args.get("num_results"))
+    is_grepped = True #str(request.args.get("with_grep"))
 
     sentence = util.query_to_sentence(query)
     vector = s2v.sentence_to_vec([sentence],EMBEDDING_DIM,from_persisted=True)
 
+    answers = None
 
-    answers = retrieve_closest_passages(vector,vectors=sentence_vectors,from_pdf=pdf,num_passages=20)
+    if is_grepped:
+
+        # remove stop words from query
+        query_words = query.split(" ")
+        filtered_words = [word for word in query_words if word not in stopwords.words('english')]
+        answers = retrieve_closest_passages(vector,vectors=sentence_vectors,from_pdf=pdf,num_passages=len(sentence_vectors)-1)
+
+        grepped_answers = []
+        ungrepped_answers = []
+
+        for answer in answers:
+            if any(word in answer["clean_passage"] for word in filtered_words):
+                grepped_answers.append(answer)
+
+            else:
+                ungrepped_answers.append(answer)
+
+
+        # if number of grepped_answers is smaller than expected number of results
+        if len(grepped_answers) < num_results:
+            answers = grepped_answers+ungrepped_answers
+            answers = answers[:num_results]
+
+        else:
+            answers = grepped_answers[:num_results]
+
+
+
+    else:
+        answers = retrieve_closest_passages(vector,vectors=sentence_vectors,from_pdf=pdf,num_passages=num_results)
+
+
 
     # distances = distance.cdist(sentence_vectors,vector,'euclidean');
     # closest_indexes = sorted(range(len(distances)),key= lambda k: distances[k])
@@ -132,6 +166,14 @@ def search():
 
     # return render_template('results.html', results = {"query":query,"data":answers});
     results = {"query":query,"data":answers}
+    return jsonify(results)
+
+
+@app.route("/",methods=['POST','GET'])
+def get_meta_data():
+    pdf = str(request.args.get('pdf'))
+
+    results = {"pdf":pdf}
     return jsonify(results)
 
 
