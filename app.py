@@ -1,3 +1,4 @@
+import pickle
 import pandas as pd
 from flask import Flask
 from flask import request
@@ -5,8 +6,8 @@ from flask import send_from_directory
 from flask import jsonify
 from flask import render_template
 from flask import jsonify
-import helpers.util as util
-import helpers.sentence2vec as s2v
+import helpers.GenerateVectors as GV
+# import helpers.sentence2vec as s2v
 from nltk.corpus import stopwords
 import numpy as np
 import h5py
@@ -21,120 +22,24 @@ EMBEDDING_DIM = 100
 # word_to_idx = np.load("models/word_to_idx.npy").item()
 
 # indexed documents to search against
-sentence_vectors = np.load("models/sentence_vectors.npy")
-filename_to_idx = np.load("models/filename_to_idx.npy").item()
-idx_to_filename = np.load("models/idx_to_filename.npy").item()
-idx_to_metadata = np.load("models/idx_to_metadata.npy").item()
 
-clean_passages = pd.read_csv("models/clean_passages.csv", header=None).values
-clean_passages = clean_passages.reshape(len(clean_passages))
+idx_to_filename = pickle.load(open("data/models/idx_to_filename.pkl", 'rb'))
+idx_to_metadata = pickle.load(open("data/models/idx_to_metadata.pkl", 'rb'))
+allvocab_to_idx = pickle.load(open("data/models/allvocab_to_idx.pkl", 'rb'))
+allvocab = allvocab_to_idx.keys()
+wvvocab_to_idx = pickle.load(open("data/models/wvvocab_to_idx.pkl", 'rb'))
+wvvocab = wvvocab_to_idx.keys()
+counts = pickle.load(open("data/models/word_counts.pkl", 'rb'))
+embedding_matrix = pickle.load(open("data/models/embedding_matrix.pkl", 'rb'))
+sentence_vectors = pickle.load(open("data/models/sentence_vectors.pkl", 'rb'))
+sentence_words = pickle.load(open("data/models/sentence_words.pkl", 'rb'))
+sentence_words_idx = pickle.load(
+    open("data/models/sentence_words_idx.pkl", 'rb'))
+english_words = pickle.load(open("data/models/english_words.pkl", 'rb')).keys()
+french_words = pickle.load(open("data/models/french_words.pkl", 'rb')).keys()
 
-raw_passages = pd.read_csv("models/raw_passages.csv", header=None).values
-raw_passages = raw_passages.reshape(len(raw_passages))
-
-# h5f = h5py.File('models/clauses.h5','r')
-# clauses = h5f['clauses'][:]
-
-
-from scipy.spatial import distance
-
-
-# def retrieve_vectors_from_pdf(vectors, from_pdf):
-#     return [(index, vector) for index, vector in enumerate(vectors) if idx_to_filename[int(idx_to_metadata[index].split("-")[0])] == from_pdf]
-#
-# def retrieve_closest_passages(vector, vectors=None, from_pdf=None, num_passages=10):
-#     answers = []
-#
-#     if vectors is None:
-#         vectors = sentence_vectors
-#
-#     if from_pdf is not None:
-#         vectors_idx_pairs = retrieve_vectors_from_pdf(
-#             vectors, from_pdf=from_pdf)
-#         vectors = [v[1] for v in vectors_idx_pairs]
-#         idx_to_repoidx = {idx: v[0] for idx, v in enumerate(vectors_idx_pairs)}
-#
-#         if len(vectors) > 0:
-#             distances = distance.cdist(vectors, vector)
-#             closest_indexes = sorted(
-#                 range(len(distances)), key=lambda k: distances[k])
-#
-#             if len(closest_indexes) > num_passages:
-#                 for index in range(num_passages):
-#
-#                     repo_idx = idx_to_repoidx[closest_indexes[index]]
-#
-#                     filename_index = int(
-#                         idx_to_metadata[repo_idx].split("-")[0])
-#                     filename = idx_to_filename[filename_index]
-#
-#                     url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
-#                     if filename[-1] == 'a':
-#                         url = url.format("eng", "agreements",
-#                                          filename[:2], filename)
-#                     else:
-#                         url = url.format("fra", "conventions",
-#                                          filename[:2], filename)
-#
-#                     answers.append({
-#                         "raw_passage": raw_passages[repo_idx],
-#                         "clean_passage": clean_passages[repo_idx],
-#                         "metadata": idx_to_metadata[repo_idx],
-#                         "pdf_url": url
-#                     })
-#             else:
-#                 for index in range(len(vectors)):
-#
-#                     repo_idx = idx_to_repoidx[closest_indexes[index]]
-#
-#                     filename_index = int(
-#                         idx_to_metadata[repo_idx].split("-")[0])
-#                     filename = idx_to_filename[filename_index]
-#
-#                     url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
-#                     if filename[-1] == 'a':
-#                         url = url.format("eng", "agreements",
-#                                          filename[:2], filename)
-#                     else:
-#                         url = url.format("fra", "conventions",
-#                                          filename[:2], filename)
-#
-#                     answers.append({
-#                         "raw_passage": raw_passages[repo_idx],
-#                         "clean_passage": clean_passages[repo_idx],
-#                         "metadata": idx_to_metadata[repo_idx],
-#                         "pdf_url": url
-#                     })
-#
-#     else:
-#         distances = distance.cdist(vectors, vector)
-#         closest_indexes = sorted(
-#             range(len(distances)), key=lambda k: distances[k])
-#
-#         for index in range(num_passages):
-#
-#             filename_index = int(
-#                 idx_to_metadata[closest_indexes[index]].split("-")[0])
-#             filename = idx_to_filename[filename_index]
-#
-#             url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
-#             if filename[-1] == 'a':
-#                 url = url.format("eng", "agreements", filename[:2], filename)
-#             else:
-#                 url = url.format("fra", "conventions", filename[:2], filename)
-#
-#             answers.append({
-#                 "raw_passage": raw_passages[closest_indexes[index]],
-#                 "clean_passage": clean_passages[closest_indexes[index]],
-#                 "metadata": idx_to_metadata[closest_indexes[index]],
-#                 "pdf_url": url
-#             })
-#
-#     return answers
-
-
-
-
+EMBEDDING_DIM = 100
+TEXT_DATA_DIR = 'data/texts-pkls/'
 
 
 # NICOLAS PART
@@ -341,7 +246,7 @@ def search():
     num_results = 25  # str(request.args.get("num_results"))
 
     answer_indexes = retrieve_closest_passages(query)
-    answers = get_closest_passages(answer_indexes,num_results=num_results)
+    answers = get_closest_passages(answer_indexes,num_answers=num_results)
 
     results = {"query": query, "data": answers}
     return jsonify(results)
@@ -353,7 +258,7 @@ def search():
 def get_answers_for_indexes():
 
     answer_ids = str(request.args.get('ids'));
-    answers = get_closest_passages(answer_ids,num_results=num_results)
+    answers = get_closest_passages(answer_ids,num_answers=num_results)
 
     results = {"data": answers}
     return jsonify(results)
