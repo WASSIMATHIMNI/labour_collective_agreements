@@ -146,7 +146,7 @@ def get_closest_passages(answers, num_answers=None):
 
     urls = []
     for result in results:
-        filename = result.split("texts-pkls")[1].split("-")[0]
+        filename = result[0].split("texts-pkls")[1].split("-")[0]
         url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
         if filename[-1] == 'a':
             url = url.format("eng", "agreements",filename[:2], filename)
@@ -155,8 +155,8 @@ def get_closest_passages(answers, num_answers=None):
 
         urls.append(url)
 
-    answers = [{"metadata":result[0], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
-    return(results)
+    answer = [{"metadata":result[0].split("texts-pkls")[1], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
+    return(answer)
 
 
 
@@ -243,7 +243,7 @@ def search():
     if request.args.get('pdf') is not None:
         pdf = str(request.args.get('pdf'))
 
-    num_results = 25  # str(request.args.get("num_results"))
+    num_results = 200  # str(request.args.get("num_results"))
 
     answer_indexes = retrieve_closest_passages(query)
     answers = get_closest_passages(answer_indexes,num_answers=num_results)
