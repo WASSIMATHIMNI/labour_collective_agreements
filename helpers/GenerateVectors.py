@@ -84,7 +84,10 @@ def sentence_to_vec_idx(s2v_sentences: List[List[int]], counts, embedding_matrix
     for vs in sentence_set:
         sub = P.dot(vs)
         # sub = np.multiply(u,vs)
-        sentence_vecs.append(np.subtract(vs, sub))
+        vsn = np.subtract(vs, sub)
+        if np.linalg.norm(vsn) != 0:
+            vsn = np.divide(vsn,np.linalg.norm(vsn))
+        sentence_vecs.append(vsn)
 
     return sentence_vecs
 
@@ -97,6 +100,12 @@ def filterCA(filename,english_words,french_words):
         dict_words = french_words
     else:
         raise NameError('langue introuvable')
+
+    #THIS NEEDS TO BE FIXED 
+    filename = filename.replace("texts-pdftotext-fed","texts-pkls")
+
+
+    print("NEW: ",filename)
 
     if filename.split('.')[-1] == 'pkl':
         data = pickle.load(open(filename,'rb'))
@@ -192,6 +201,7 @@ def cleanpassage(passage):
     return(' '.join(newpassage.split()).lower())
 
 if __name__ == "__main__":
+
     print(str(datetime.now())+'\t'+'Importation des dictionnaires')
     cwd = os.getcwd()+'/'
     #ver = str(datetime.now()).replace('.','-').replace(' ','-').replace(':','-')
@@ -230,7 +240,6 @@ if __name__ == "__main__":
     print(str(datetime.now())+'\t'+'Importation des conventions collectives')
     #passage: for [agreement][page] du texte des collective agreements. Les phrases sont separes dans des sauts a la ligne \n
     for name in sorted(os.listdir(TEXT_DATA_DIR)):
-        print(name)
         icount += 1
         if icount  > ncount*len(os.listdir(TEXT_DATA_DIR))/10:
             print('%i%%'%(ncount*10))
@@ -260,6 +269,7 @@ if __name__ == "__main__":
     seed = 23
 
     model = Word2Vec(
+    #     bigrams[clauses_by_words],
         passages_by_words,
         seed=seed,
         workers=num_workers,

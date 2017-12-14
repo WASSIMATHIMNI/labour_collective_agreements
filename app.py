@@ -7,6 +7,7 @@ from flask import jsonify
 from flask import render_template
 from flask import jsonify
 import helpers.GenerateVectors as GV
+import ast
 # import helpers.sentence2vec as s2v
 from nltk.corpus import stopwords
 import numpy as np
@@ -39,7 +40,9 @@ english_words = pickle.load(open("data/models/english_words.pkl", 'rb')).keys()
 french_words = pickle.load(open("data/models/french_words.pkl", 'rb')).keys()
 
 EMBEDDING_DIM = 100
+NUM_ANSWERS = 10
 TEXT_DATA_DIR = 'data/texts-pkls/'
+
 
 
 # NICOLAS PART
@@ -53,15 +56,14 @@ def query_to_vector(text):
     return(GV.sentence_to_vec_idx([sentence_idx], counts, embedding_matrix, from_persisted=True))
 
 
-def distangle(x, y):
-    a = np.empty((len(x), len(y)))
-    for i, xi in enumerate(x):
-        for j, yj in enumerate(y):
+def distangle(x,y):
+    a = np.empty((len(x),len(y)))
+    for i,xi in enumerate(x):
+        for j,yj in enumerate(y):
             if np.linalg.norm(xi) == 0 or np.linalg.norm(yj) == 0:
-                a[i, j] = -1
+                a[i,j] = -1
             else:
-                a[i, j] = np.dot(xi, yj) / (np.linalg.norm(xi)
-                                            * np.linalg.norm(yj))
+                a[i,j] = np.dot(xi,yj)
     return(-a)
 
 
@@ -113,7 +115,7 @@ def retrieve_closest_passages(query, from_pdfs=None, idx_true=None):
 
 
 # returns the text from a list on indexes
-def get_closest_passages(answers, num_answers=None):
+def get_closest_passages(answers, num_answers=NUM_ANSWERS):
 
     #answer = {
     #     "raw_passage": raw_passages[closest_indexes[index]],
@@ -123,7 +125,6 @@ def get_closest_passages(answers, num_answers=None):
     # }
 
     global idx_to_metadata, idx_to_filename
-    global TEXT_DATA_DIR
     global english_words
     global french_words
 
@@ -146,7 +147,10 @@ def get_closest_passages(answers, num_answers=None):
 
     urls = []
     for result in results:
-        filename = result[0].split("texts-pkls")[1].split("-")[0]
+
+        #THIS NEEDS TO BE FIXED
+
+        filename = result[0].replace("texts-pdftotext-fed","texts-pkls").split("texts-pkls")[1].split("-")[0]
         url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
         if filename[-1] == 'a':
             url = url.format("eng", "agreements",filename[:2], filename)
@@ -155,7 +159,7 @@ def get_closest_passages(answers, num_answers=None):
 
         urls.append(url)
 
-    answer = [{"metadata":result[0].split("texts-pkls")[1], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
+    answer = [{"metadata":result[0].replace("texts-pdftotext-fed","texts-pkls").split("texts-pkls")[1], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
     return(answer)
 
 
@@ -239,16 +243,17 @@ def search():
 
     query = str(request.args.get('query'))
 
+
     pdf = None
     if request.args.get('pdf') is not None:
         pdf = str(request.args.get('pdf'))
 
-    num_results = 200  # str(request.args.get("num_results"))
-
     answer_indexes = retrieve_closest_passages(query)
-    answers = get_closest_passages(answer_indexes,num_answers=num_results)
 
-    results = {"query": query, "data": answers}
+    answers = get_closest_passages(answer_indexes[:NUM_ANSWERS])
+
+    results = {"query": query, "data": answers,"indexes":answer_indexes}
+
     return jsonify(results)
 
 
@@ -257,8 +262,9 @@ def search():
 @app.route("/answers", methods=['POST', 'GET'])
 def get_answers_for_indexes():
 
-    answer_ids = str(request.args.get('ids'));
-    answers = get_closest_passages(answer_ids,num_answers=num_results)
+    answer_ids = ast.literal_eval(request.args.get('ids'));
+    # answer_ids = str(request.args.get('ids'));
+    answers = get_closest_passages(answer_ids)
 
     results = {"data": answers}
     return jsonify(results)
