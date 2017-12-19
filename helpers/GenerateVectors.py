@@ -101,11 +101,8 @@ def filterCA(filename,english_words,french_words):
     else:
         raise NameError('langue introuvable')
 
-    #THIS NEEDS TO BE FIXED 
+    #THIS NEEDS TO BE FIXED
     filename = filename.replace("texts-pdftotext-fed","texts-pkls")
-
-
-    print("NEW: ",filename)
 
     if filename.split('.')[-1] == 'pkl':
         data = pickle.load(open(filename,'rb'))

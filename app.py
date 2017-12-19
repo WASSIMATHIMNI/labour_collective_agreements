@@ -8,6 +8,10 @@ from flask import render_template
 from flask import jsonify
 import helpers.GenerateVectors as GV
 import ast
+
+
+
+
 # import helpers.sentence2vec as s2v
 from nltk.corpus import stopwords
 import numpy as np
@@ -15,7 +19,6 @@ import h5py
 
 app = Flask(__name__)
 
-EMBEDDING_DIM = 100
 # indexes to word embeddings
 # embedding_matrix = np.load("models/embedding_matrix.npy")
 
@@ -244,12 +247,11 @@ def search():
     query = str(request.args.get('query'))
 
 
-    pdf = None
-    if request.args.get('pdf') is not None:
-        pdf = str(request.args.get('pdf'))
+    pdfs = None
+    if request.args.get('pdfs') is not None:
+        pdfs = ast.literal_eval(request.args.get('pdfs'));
 
-    answer_indexes = retrieve_closest_passages(query)
-
+    answer_indexes = retrieve_closest_passages(query,from_pdfs=pdfs)
     answers = get_closest_passages(answer_indexes[:NUM_ANSWERS])
 
     results = {"query": query, "data": answers,"indexes":answer_indexes}
