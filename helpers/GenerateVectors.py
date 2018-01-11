@@ -32,6 +32,8 @@ from collections import Counter
 from sklearn.decomposition import PCA
 from typing import List
 
+# from helpers.pdfs import get_pdf
+
 # A SIMPLE BUT TOUGH TO BEAT BASELINE FOR SENTENCE EMBEDDINGS
 # Sanjeev Arora, Yingyu Liang, Tengyu Ma
 # Princeton University
@@ -105,6 +107,7 @@ def filterCA(filename,english_words,french_words):
     filename = filename.replace("texts-pdftotext-fed","texts-pkls")
 
     if filename.split('.')[-1] == 'pkl':
+        # data = get_pdf(filename)
         data = pickle.load(open(filename,'rb'))
         data.append('.Ending final flag.')
     elif filename.split('.')[-1] == 'txt':

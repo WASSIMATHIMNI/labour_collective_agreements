@@ -11,7 +11,6 @@ import ast
 
 
 
-
 # import helpers.sentence2vec as s2v
 from nltk.corpus import stopwords
 import numpy as np
@@ -37,8 +36,7 @@ counts = pickle.load(open("data/models/word_counts.pkl", 'rb'))
 embedding_matrix = pickle.load(open("data/models/embedding_matrix.pkl", 'rb'))
 sentence_vectors = pickle.load(open("data/models/sentence_vectors.pkl", 'rb'))
 sentence_words = pickle.load(open("data/models/sentence_words.pkl", 'rb'))
-sentence_words_idx = pickle.load(
-    open("data/models/sentence_words_idx.pkl", 'rb'))
+sentence_words_idx = pickle.load(open("data/models/sentence_words_idx.pkl", 'rb'))
 english_words = pickle.load(open("data/models/english_words.pkl", 'rb')).keys()
 french_words = pickle.load(open("data/models/french_words.pkl", 'rb')).keys()
 
@@ -54,8 +52,7 @@ def query_to_vector(text):
     global wvvocab_to_idx, wvvocab
     global counts, embedding_matrix
 
-    sentence_idx = [wvvocab_to_idx[word]
-                    for word in GV.cleanpassage(text).split() if word in wvvocab]
+    sentence_idx = [wvvocab_to_idx[word] for word in GV.cleanpassage(text).split() if word in wvvocab]
     return(GV.sentence_to_vec_idx([sentence_idx], counts, embedding_matrix, from_persisted=True))
 
 
@@ -70,7 +67,7 @@ def distangle(x,y):
     return(-a)
 
 
-def retrieve_closest_passages(query, from_pdfs=None, idx_true=None):
+def retrieve_closest_passages_indexes(query, from_pdfs=None, idx_true=None):
     "retourne la liste des num_passages les plus proches de la query parmis les sentence_vectors."
     # from_pdf: liste de pdf. Seulement parmis les vectors du code pdf fourni (format idx_to_filename).
     # idx_true: Passage recherché (format int idx de la liste pages_list), si fourni, retourne aussi la position dans les queries de la vraie réponse dans la variable position_true.
@@ -79,8 +76,7 @@ def retrieve_closest_passages(query, from_pdfs=None, idx_true=None):
     global counts, embedding_matrix
     global position_true
 
-    query_idx = [allvocab_to_idx[word]
-                 for word in GV.cleanpassage(query).split() if word in allvocab]
+    query_idx = [allvocab_to_idx[word] for word in GV.cleanpassage(query).split() if word in allvocab]
 
     indexes = []
     filtered_vectors = []
@@ -139,8 +135,7 @@ def get_closest_passages(answers, num_answers=NUM_ANSWERS):
 
     textCA = []
     for pdf in pdflist:
-        textCA.append(GV.filterCA(
-            TEXT_DATA_DIR+idx_to_filename[pdf] + '.pkl', english_words, french_words))
+        textCA.append(GV.filterCA(TEXT_DATA_DIR+idx_to_filename[pdf] + '.pkl', english_words, french_words))
 
     results = []
     for meta in metalist:
@@ -164,7 +159,6 @@ def get_closest_passages(answers, num_answers=NUM_ANSWERS):
 
     answer = [{"metadata":result[0].replace("texts-pdftotext-fed","texts-pkls").split("texts-pkls")[1], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
     return(answer)
-
 
 
 @app.route("/")
@@ -202,7 +196,7 @@ def send_public(path):
 #         query_words = query.split(" ")
 #         filtered_words = [
 #             word for word in query_words if word not in stopwords.words('english')]
-#         answers = retrieve_closest_passages(
+#         answers = retrieve_closest_passages_indexes(
 #             vector, vectors=sentence_vectors, from_pdf=pdf, num_passages=len(sentence_vectors) - 1)
 #
 #         grepped_answers = []
@@ -224,7 +218,7 @@ def send_public(path):
 #             answers = grepped_answers[:num_results]
 #
 #     else:
-#         answers = retrieve_closest_passages(
+#         answers = retrieve_closest_passages_indexes(
 #             vector, vectors=sentence_vectors, from_pdf=pdf, num_passages=num_results)
 #
 #     # distances = distance.cdist(sentence_vectors,vector,'euclidean');
@@ -251,8 +245,10 @@ def search():
     if request.args.get('pdfs') is not None:
         pdfs = ast.literal_eval(request.args.get('pdfs'));
 
-    answer_indexes = retrieve_closest_passages(query,from_pdfs=pdfs)
+    answer_indexes = retrieve_closest_passages_indexes(query,from_pdfs=pdfs)
+    print("GOT ANSWER INDEXES!")
     answers = get_closest_passages(answer_indexes[:NUM_ANSWERS])
+    print("GOT ANSWER TEXTS!")
 
     results = {"query": query, "data": answers,"indexes":answer_indexes}
 
@@ -265,7 +261,6 @@ def search():
 def get_answers_for_indexes():
 
     answer_ids = ast.literal_eval(request.args.get('ids'));
-    # answer_ids = str(request.args.get('ids'));
     answers = get_closest_passages(answer_ids)
 
     results = {"data": answers}
