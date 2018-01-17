@@ -82,7 +82,7 @@ def retrieve_closest_passages_indexes(query, from_pdfs=None, idx_true=None):
     filtered_vectors = []
 
 
-    if from_pdfs is not None: pdf_list = set(from_pdfs)
+    if from_pdfs is not None || len(from_pdfs) > 0: pdf_list = set(from_pdfs)
     else: pdf_list = set(idx_to_filename.values())
 
 
