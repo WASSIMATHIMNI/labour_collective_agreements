@@ -242,6 +242,10 @@ def search():
 
 
     pdfs = None
+
+    print(request.args.get('pdfs'))
+    print(request.args.get('pdfs') is not None)
+
     if request.args.get('pdfs') is not None:
         pdfs = ast.literal_eval(request.args.get('pdfs'));
 
