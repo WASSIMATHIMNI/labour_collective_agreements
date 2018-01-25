@@ -81,12 +81,15 @@ def retrieve_closest_passages_indexes(query, from_pdfs=None, idx_true=None):
     indexes = []
     filtered_vectors = []
 
-
-    if from_pdfs is not None || len(from_pdfs) > 0: pdf_list = set(from_pdfs)
+    if from_pdfs is not None or len(from_pdfs) > 0: pdf_list = set(from_pdfs)
     else: pdf_list = set(idx_to_filename.values())
 
+    print(pdf_list)
 
     for i, v in enumerate(sentence_vectors):
+
+        print(idx_to_filename[int(idx_to_metadata[i].split("-")[0])])
+
         if idx_to_filename[int(idx_to_metadata[i].split("-")[0])] in pdf_list:
             grepsome = 0
             for word_idx in query_idx:
@@ -145,10 +148,7 @@ def get_closest_passages(answers, num_answers=NUM_ANSWERS):
 
     urls = []
     for result in results:
-
-        #THIS NEEDS TO BE FIXED
-
-        filename = result[0].replace("texts-pdftotext-fed","texts-pkls").split("texts-pkls")[1].split("-")[0]
+        filename = result[0]
         url = "http://negotech.labour.gc.ca/{}/{}/{}/{}.pdf"
         if filename[-1] == 'a':
             url = url.format("eng", "agreements",filename[:2], filename)
@@ -157,7 +157,7 @@ def get_closest_passages(answers, num_answers=NUM_ANSWERS):
 
         urls.append(url)
 
-    answer = [{"metadata":result[0].replace("texts-pdftotext-fed","texts-pkls").split("texts-pkls")[1], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
+    answer = [{"metadata":result[0], "raw_passage":result[1],"pdf_url":urls[index]} for index,result in enumerate(results)]
     return(answer)
 
 
@@ -241,7 +241,7 @@ def search():
     query = str(request.args.get('query'))
 
 
-    pdfs = None
+    # pdfs = ["1420004c"]
 
     print(request.args.get('pdfs'))
     print(request.args.get('pdfs') is not None)
