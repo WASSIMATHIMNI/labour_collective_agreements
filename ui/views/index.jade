@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  div.container
+    div#tut1container
+      div#tut1title Click the search bar
+      div.row
+        div.col.s12.m10.l8.offset-m1.offset-l2
+          h3#search-title Search Collective Agreements
+      div.row#search-all-div
+        div.col.s12.m10.l8.offset-m1.offset-l2
+          div#filter-btn
+            svg.tooltipped(data-position="top", data-delay="50", data-tooltip="Filter", width="40", height="40", viewBox="0 0 48 48")
+              rect(fill='#777' x='6' y='13' width='36' height='5' data-x='6')
+              rect(fill='#777' x='12' y='23' width='24' height='5' data-x='12')
+              rect(fill='#777' x='19' y='33' width='10' height='5' data-x='19')
+          div#search-bar-div
+            div#search-filters
+            input#search-bar
+            div#auto-complete
+            div#filter-div
+              div#filter-title Additional Search Filters
+              div#filter-container
+                label Agreement Number
+                div#filter-pdfname
+                  select#filter-pdfname-input(multiple="true")
+      div#tut1explain1.tut1explain and type in certain keywords, such as...
+      div#tut1explain2.tut1explain "Computer system sick days"
+      div#tut1explain3.tut1explain "Employees required to do overtime if asked"
+      div#tut1explain4.tut1explain "Border service pay rates"
+      div#tut1explain5.tut1explain Press enter to search.
+    div#search-results
+    div.fixed-action-btn#tags-btn-div
+      a.btn-floating.btn-large.purple.lighten-3.tooltipped(data-position="left", data-tooltip="Manage Tags", data-current='en')#tags-btn Tags
+    div.fixed-action-btn#help-btn-div
+      a.btn-floating.btn-large.brown.lighten-2.tooltipped#tutorial-btn(data-position="left", data-delay="100", data-tooltip="Tutorial")
+        svg(width="30", height="30", viewBox="0 0 48 48").btnsvgs
+          path(fill='#fff', d="M38 8H10c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h8v-4h-8V16h28v20h-8v4h8c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4zM24 20l-8 8h6v12h4V28h6l-8-8z")
+    div.fixed-action-btn#close-btn-div
+      a.btn-floating.btn-large.red.lighten-2.tooltipped#tutorial-close-btn(data-position="left", data-delay="100", data-tooltip="Close Tutorial")
+        svg(width="30", height="30", viewBox="0 0 48 48").btnsvgs
+          path(fill='#fff', d="M38 12.83L35.17 10 24 21.17 12.83 10 10 12.83 21.17 24 10 35.17 12.83 38 24 26.83 35.17 38 38 35.17 26.83 24z")
+    div.fixed-action-btn#french-btn-div
+      a.btn-floating.btn-large.teal.lighten-1.tooltipped(data-position="left", data-tooltip="Français", data-current='en')#french-btn Fr
+    div#tutorial-div

@@ -1,0 +1,21 @@
+doctype html
+html
+  head
+    title= title
+    //External JS
+    script(type="text/javascript", src="/javascripts/external/jquery-3.2.1.min.js")
+    script(type="text/javascript", src="/javascripts/external/materialize.min.js")
+    script(type="text/javascript", src="/javascripts/external/socket.io.slim.js")
+    script(type="text/javascript", src="/javascripts/external/jquery.transit.min.js")
+    script(type="text/javascript", src="/javascripts/external/chosen.jquery.min.js")
+    //Internal JS
+    script(src="/javascripts/socket.js")
+    script(src="/javascripts/layout.js")
+    //External CSS
+    link(rel='stylesheet', type="text/css", href='/stylesheets/external/chosen.css')
+    link(rel='stylesheet', type="text/css", href='/stylesheets/external/materialize.min.css', media="screen,projection")
+    //Internal CSS
+    link(rel='stylesheet', type="text/css", href='/stylesheets/style.css')
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+  body
+    block content

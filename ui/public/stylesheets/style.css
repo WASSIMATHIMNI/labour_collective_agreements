@@ -1,0 +1,480 @@
+body{
+  padding-top: 150px; 
+}
+input::-ms-clear {
+   display: none;
+}
+h1,h2,h3,h4{
+  cursor: default;
+}
+/*Search Bar*/
+#search-bar-div{
+  position: relative;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: #fff;
+  border-radius: 2px;
+  background: #fff;
+  border: 1px solid #fff;
+  color: #757575;
+  cursor: default;
+  font-size: 14px;
+  font-weight: 100;
+  margin-bottom: 50px;
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+#search-bar-div:hover{
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.08);
+}
+#search-bar{
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  font-size: 18px;
+}
+#search-bar:focus{
+  box-shadow: none;
+}
+#search-title{
+  font-weight: 100;
+  color: #757575;
+  margin-bottom: 0px;
+}
+#auto-complete{
+  font-size: 16px;
+}
+#auto-complete p{
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding-left: 5px;
+  cursor: pointer;
+}
+#auto-complete p:hover{
+  background-color: #e0f2f1;
+}
+.auto-comp-active{
+  background-color: #e0f2f1;
+}
+/*filter*/
+#filter-btn{
+  position: absolute;
+  cursor: pointer;
+  margin-left: -50px;
+  margin-top: 4px;
+}
+#filter-div{
+  background-color: #f5f5f5;
+  position: absolute;
+  margin-left: -21px;
+  margin-top: 20px;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  border: 1px solid #f5f5f5;
+  opacity: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+}
+#filter-title{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-weight: 300;
+  border-bottom: 1px solid #ccc;
+}
+#filter-pdfname{
+  font-size: 18px;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  min-height: 30px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #fff;
+}
+#filter-pdfname input{
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  height: 26px;
+}
+#filter-pdfname input:focus{
+  box-shadow:none;
+}
+#filter-pdfname:focus{
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+}
+#filter-container label{
+  font-weight: 300;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+#search-filters{
+  position: absolute;
+  right: 0;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  height: 25px;
+  line-height: 25px;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-right: 15px;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-weight: 300;
+  opacity: 0;
+}
+/*chosen alteration*/
+.chosen-container-multi{
+  margin-left: -10px;
+  box-shadow: none !important;
+  background-image:none !important;
+  border: none !important;
+}
+.chosen-choices{
+  border: none !important;
+  background-image:none !important;
+}
+.chosen-search-input{
+  width: 180px !important;
+}
+/*menu*/
+#french-btn{
+  -webkit-transition: translate3d(0,0,0);
+}
+.btnsvgs{
+  margin-top: 12px;
+}
+.pdf-icon-div{
+  position: absolute;
+  margin-right: 45px;
+  margin-top: 5px;
+  cursor: pointer;
+  right: 0;
+}
+/*Loading*/
+#loading-container{
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  margin-top: -50px;
+}
+@-webkit-keyframes lds-ripple {
+  0% {
+    top: 90px;
+    left: 90px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: 15px;
+    left: 15px;
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+  }
+}
+@keyframes lds-ripple {
+  0% {
+    top: 90px;
+    left: 90px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: 15px;
+    left: 15px;
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+  }
+}
+.lds-ripple {
+  position: relative;
+}
+.lds-ripple div {
+  box-sizing: content-box;
+  position: absolute;
+  border-width: 10px;
+  border-style: solid;
+  opacity: 1;
+  border-radius: 50%;
+  -webkit-animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(1) {
+  border-color: #999;
+}
+.lds-ripple div:nth-child(2) {
+  border-color: #999;
+  -webkit-animation-delay: -0.5s;
+  animation-delay: -0.5s;
+}
+
+/*Results*/
+.highlight {
+  background: yellow;
+}
+.search-result{
+  margin-bottom: 34px;
+}
+#search-results{
+  position: absolute;
+  width: inherit;
+  z-index: -1;
+}
+#search-results-count{
+  text-align: right;
+  font-weight: 300;
+  font-size: 18px;
+  margin-top: -14px;
+  color: #999;
+}
+.inlinepdf{
+  position: absolute;
+  opacity: 0;
+  padding: 20px;
+}
+.result-container{
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 2px;
+  background: #fff;
+  border: 1px solid #fff;
+  color: #757575;
+  cursor: default;
+  font-size: 14px;
+  font-weight: 100;
+  padding: 30px;
+  padding-top: 25px;
+}
+.result-title{
+  font-size: 18px;
+  font-weight: 100;
+  margin-top: -18px;
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+}
+.result-pdf{
+  background-color: #eee;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+  cursor: text;
+}
+.result-pdf:hover{
+  box-shadow: 0 3px 5px rgba(0,0,0,0.16), 0 3px 5px rgba(0,0,0,0.18);
+}
+.closepdfbutton{
+  position: absolute;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  margin-top: -20px;
+  color: #ef9a9a;
+}
+.metadatalink{
+  font-weight: 100;
+  padding: 2px;
+  position: absolute;
+  right: 0;
+  margin-right: 45px;
+  bottom: 0;
+  margin-bottom: 30px;
+}
+.result-pdf-page{
+  background-color: white;
+  margin-left: 10%;
+  border-top: 0px;
+  margin-right: 10%;
+  height: 100%;
+  padding: 10px 20px;
+}
+.result-text{
+  font-size: 16px;
+}
+
+.blurry-text1{
+  color: #eee;
+  filter: progid:DXImageTransform.Microsoft.Chroma(color=#333333),
+          progid:DXImageTransform.Microsoft.MotionBlur(strength=0, direction=0),
+          progid:DXImageTransform.Microsoft.Blur(pixelradius=3);
+  text-shadow: 0 0 5px rgba(0,0,0,0.4);
+  margin-top: -23px;
+  margin-bottom: -7px;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 5px;
+  margin-left: -5px;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+}
+.blurry-text2{
+  color: #eee;
+  filter: progid:DXImageTransform.Microsoft.Chroma(color=#333333),
+          progid:DXImageTransform.Microsoft.MotionBlur(strength=0, direction=0),
+          progid:DXImageTransform.Microsoft.Blur(pixelradius=2);
+  text-shadow: 0 0 5px rgba(0,0,0,0.4);
+  margin-top: -10px;
+  margin-bottom: -23px;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 5px;
+  margin-left: -5px;
+
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+.download-btns{
+  position: absolute;
+  right:0px;
+  margin-right: 35px;
+  margin-top: -5px;
+  padding-left: 16px;
+  padding-right: 16px;
+  transform: scale(0.70);
+}
+.thumb-up, .thumb-down{
+  opacity: 0.35;
+  transition: all 1s cubic-bezier(.25,.8,.25,1);
+}
+.thumb-up:hover, .thumb-down:hover{
+  opacity: 1;
+}
+.thumb-active{
+  opacity: 1;
+}
+.thumb-buttons{
+  cursor: pointer;
+}
+.thumb-div{
+  position: absolute;
+  right: 0px;
+  transform: scale(0.85);
+  margin-right: -18px;
+  margin-top: -30px;
+}
+#close-btn-div{
+  display: none;
+}
+#help-btn-div, #close-btn-div{
+  bottom: 90px;
+}
+#help-btn-grp{
+  margin-bottom: -8px;
+}
+#help-btn-grp li{
+  margin-bottom: 10px;
+}
+#tags-btn-div{
+  bottom: 160px;
+}
+.metadata-div{
+  position: absolute;
+  float: right;
+  margin-top: 3px;
+  left: 0;
+}
+.metadata-tags{
+  color: #333;
+  font-weight: 300;
+  background-color: #eee;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 3px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  float: right;
+  cursor: pointer;
+}
+/*Tutorial*/
+#tutorial-div{
+  background: url(../images/iefilter.jpg) no-repeat -999px -999px;
+  background-color: rgba(0,0,0,0.65); /*dim the background*/
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#44000000', endColorstr='#44000000'); /* IE */
+  left:0;
+  top:0;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 10;
+  display: none;
+  opacity: 0;
+}
+#tut1container{
+  background-color: transparent;
+  border-radius: 5px;
+}
+#tut1title{
+  font-size: 50px;
+  position: absolute;
+  margin-top: -75px;
+  font-weight: 100;
+  color: white;
+}
+#tut1explain1{
+  margin-bottom: -50px;
+}
+#tut1explain2{
+  margin-bottom: -100px;
+}
+#tut1explain3{
+  margin-bottom: -150px;
+}
+#tut1explain4{
+  margin-bottom: -200px;
+}
+#tut1explain5{
+  margin-bottom: -250px;
+}
+.tut1explain{
+  font-size: 30px;
+  position: absolute;
+  bottom: 0;
+  font-weight: 100;
+  color: white;
+  right: 0;
+  opacity: 0;
+  display: none;
+}
+.floatingtext{
+  border-radius: 2px;
+  position: absolute;
+  background-color: #323232;
+  padding: 10px 25px;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: #fff;
+  cursor: pointer;
+}
+.floatingtext:hover{
+  background-color: #454545;
+}
+
+/*iframe PDFS*/
+#pdf-iframe{
+  display: none;
+}
+
+
+/*General*/
+
+.float-clear{
+  clear: both;
+}

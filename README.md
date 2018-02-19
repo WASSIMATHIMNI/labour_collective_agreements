@@ -1,1 +1,3 @@
-# labour_collective_agreements
+# Q/A Collective Agreements
+
+Q/A system for labour collective agreements. 
