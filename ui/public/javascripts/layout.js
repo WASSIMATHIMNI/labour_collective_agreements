@@ -49,6 +49,30 @@ $(document).ready(function (){
   function loadingAnimation(){
     $("#search-results").html('<div id="loading-container"><div class="lds-css"><div style="width:200px;height:200px;" class="lds-ripple"><div></div><div></div></div></div></div>');
   }
+  //Search Button
+  $("#search-button").click(function (){
+    var e = $.Event( "keyup", { which: 13 } );
+    $("#search-bar").trigger(e);
+  });
+
+  //Search Function
+  function createSearch(){
+    //Loading Gif
+    loadingAnimation();
+    //Search for something
+    //Create pdf for both english and french for agreement #
+    var tempVar = "";
+    if($("#filter-pdfname-input").val().length){
+      tempArr = $("#filter-pdfname-input").val();
+      tempFinalArr = [];
+      for (var i = 0; i < tempArr.length; i++) {
+        tempFinalArr.push(tempArr[i].replace('-','') + "a");
+        tempFinalArr.push(tempArr[i].replace('-','') + "c");
+      };
+      tempVar = ("'"+tempFinalArr.join("','")+"'");
+    }
+    socket.emit('searchAttempt', {searchInput:$('#search-bar').val(), searchFilter:{pdfName:tempVar, name:$("#filter-name-input").val(), province:$("#filter-province-input").val(), pubpri:$("#filter-pubpri-input").val(), agreement:$("#filter-agreement-input").val() }});
+  }
 
   //search event listener
   $("#search-bar").keyup(debounce(function(event){
@@ -58,7 +82,6 @@ $(document).ready(function (){
         $('#search-bar').val($("#auto-complete .auto-comp-active").text());
         socket.emit('autoCompleteSelected', {selectedId: $("#auto-complete .auto-comp-active").attr("data-uid")});
       }
-
       //Hide filter
       $('#filter-div').transition({opacity:0});
       $('#filter-btn').removeClass('active');
@@ -69,36 +92,10 @@ $(document).ready(function (){
         $("#search-results").fadeOut(function (){
           //Loading Gif
           $(this).fadeIn();
-          loadingAnimation();
-          //Search for something
-          var tempVar = "";
-          if($("#filter-pdfname-input").val().length){
-            tempArr = $("#filter-pdfname-input").val();
-            for (var i = 0; i < tempArr.length; i++) {
-              tempArr[i] = tempArr[i].replace('-','') + "a";
-            };
-            tempVar = ("'"+tempArr.join("','")+"'");
-          }
-          socket.emit('searchAttempt', {searchInput:$('#search-bar').val(), searchFilter:{pdfName:tempVar}});
+          createSearch();
         });
       }else{
-        //Loading Gif
-        loadingAnimation();
-        //Search for something
-        var tempVar = "";
-        if($("#filter-pdfname-input").val().length){
-          var tempVar = "";
-          if($("#filter-pdfname-input").val().length){
-            tempArr = $("#filter-pdfname-input").val();
-            for (var i = 0; i < tempArr.length; i++) {
-              tempArr[i] = tempArr[i].replace('-','') + "a";
-            };
-            tempVar = ("'"+tempArr.join("','")+"'");
-          }
-          //tempVar = $("#filter-pdfname-input").val().toString().replace('-','') + "a";
-        }
-        console.log(tempVar);
-        socket.emit('searchAttempt', {searchInput:$('#search-bar').val(), searchFilter:{pdfName:tempVar}});
+        createSearch();
       }
     }else if(event.which == 40){
       //Down
@@ -124,11 +121,10 @@ $(document).ready(function (){
         $("#search-bar").val(tempInput);
       }
     }else if(event.which == 37 || event.which == 39 || event.which == 16 || event.which == 17 || event.which == 18 || event.which == 9){
-
     }else{
       //When search bar has text greater than 3 characters
       if($(this).val().length > 3){
-        socket.emit('autoCompleteAttempt', {searchInput:$('#search-bar').val()});
+        //socket.emit('autoCompleteAttempt', {searchInput:$('#search-bar').val()});
       }else{
         $("#auto-complete").html("").css("border-top", "none");
       }
@@ -156,17 +152,26 @@ $(document).ready(function (){
 
     if(currentState){
       //show filter table
-      $('#filter-div').width($('#search-bar-div').width());
+      $("#filter-div").css('z-index','100');
+      $('#filter-div').width($('#search-bar-div').width() - 40);
       $('#filter-div').transition({opacity:1});
     }else{
       //hide filter
+      $("#filter-div").css('z-index','-1');
       $('#filter-div').transition({opacity:0});
-      $('#filter-div input').val('');
+      //$('#filter-div select').val('').trigger('chosen:updated');
       $("#search-filters").transition({opacity:0});
     }
   });
 
-  //Search Filter Icon
+  $('#filter-btn').find('.tooltipped').tooltip({delay: 50}).each(function (){
+    $("#"+$(this).data('tooltip-id')).css("margin-top", "13px").css("margin-left","0px");
+  });
+  $('#search-button').find('.tooltipped').tooltip({delay: 50}).each(function (){
+    $("#"+$(this).data('tooltip-id')).css("margin-top", "13px").css("margin-left","0px");
+  });
+
+  //Search Filter Icon + PDF
   $("#filter-pdfname-input").chosen({width:"100%", placeholder_text_multiple:"Type in Agreement Number", no_results_text: "More Numbers Required"});
   $("#filter-pdfname").find('.chosen-search-input').keyup(function (event){
     if(event.which == 37 || event.which == 39 || event.which == 16 || event.which == 17 || event.which == 18 || event.which == 9 || event.which == 38 || event.which == 40 || event.which == 13){
@@ -178,22 +183,66 @@ $(document).ready(function (){
     }
   });
 
-/*
-  $('#filter-pdfname-input').keyup(function (event){
-    if($(this).val() == ''){
-      $("#search-filters").transition({opacity:0});
-    }
-    if($("#search-filters").css('opacity') == 0){
-      $("#search-filters").transition({opacity:1});
-    }
-    if(event.which == 13){
-      var e = $.Event( "keyup", { which: 13 } );
-      $("#search-bar").trigger(e);
+  //union or company name
+  $("#filter-name-input").chosen({width:"100%", placeholder_text_multiple:"Type in Union or Company Name", no_results_text: "More Infomation is Required"});
+  $("#filter-name").find('.chosen-search-input').keyup(function (event){
+    if(event.which == 37 || event.which == 39 || event.which == 16 || event.which == 17 || event.which == 18 || event.which == 9 || event.which == 38 || event.which == 40 || event.which == 13){
+
     }else{
-      $("#search-filters").text("Within "+$(this).val()+".pdf");
+      if($(this).val().length > 3){
+        socket.emit('filterNameSearch', {searchInput:$(this).val()});
+      }
     }
   });
-*/
+
+  //Search filter agreement
+  $("#filter-agreement-input").chosen({width:"100%",disable_search:true , placeholder_text_multiple:"Select Agreement Status"});
+  //public or private sector
+  $("#filter-pubpri-input").chosen({width:"100%", placeholder_text_multiple:"Select Province"});
+  //Search province filter
+  $("#filter-province-input").chosen({width:"100%", placeholder_text_multiple:"Select Province"});
+
+  $("#filter-div select").change(function (){
+    var isempty = true;
+    $("#filter-display-currentactive").html("");
+    $.each($("#filter-div select"), function (i,value){
+      if($(value).val().length != 0){
+        isempty = false;
+      }
+      //add by list
+      for (var i = 0; i < $(value).val().length; i++) {
+        var tempFilterTag = $("<div>");
+        tempFilterTag.addClass("filtertag");
+        if($(value).attr('id') == 'filter-pdfname-input'){
+          tempFilterTag.css("color","#333");
+          tempFilterTag.css("background-color","#fff");
+        }else if ($(value).attr('id') == 'filter-name-input'){
+          tempFilterTag.css("color","#8e24aa");
+          tempFilterTag.css("background-color","#e1bee7");
+        }else if ($(value).attr('id') == 'filter-agreement-input'){
+          tempFilterTag.css("color","#3949ab");
+          tempFilterTag.css("background-color","#c5cae9");
+        }else if ($(value).attr('id') == 'filter-pubpri-input'){
+          tempFilterTag.css("color","#ffb300");
+          tempFilterTag.css("background-color","#ffecb3");
+        }else if ($(value).attr('id') == 'filter-province-input'){
+          tempFilterTag.css("color","#00897b");
+          tempFilterTag.css("background-color","#b2dfdb");
+        }
+        if($(value).val().length){
+          tempFilterTag.html($(value).val()[i]);
+          $("#filter-display-currentactive").append(tempFilterTag);
+        }
+      }
+    });
+    if(isempty){
+      $(".filterbars").attr('fill',"#777");
+      $("#filter-display-title").css("opacity","0");
+    }else{
+      $(".filterbars").attr('fill',"#b2ff59");
+      $("#filter-display-title").css("opacity","1");
+    }
+  });
 
   //French Translations
   $('#french-btn').click(function (){
@@ -275,6 +324,7 @@ $(document).ready(function (){
   //Begining Init
   $("#search-bar").focus().val("");
   $("#search-results").css("top", ($(".container").height()+180) + "px");
+  $('#filter-display-currentactive').width("66%");
 });
 
 function closeTutorial(){
@@ -292,6 +342,7 @@ function closeTutorial(){
 }
 //Socket Io
 socket.on('searchResults', function (data) {
+  console.log(data);
   //hide loading gif
   $("#loading-container").fadeOut(function(){
     $(this).remove();
@@ -333,6 +384,14 @@ socket.on('searchResults', function (data) {
     var tempPDFName = data.data[i].pdf_url.split('/');
     var agreementNum = data.data[i].pdf_url.split('/').slice(-1)[0].split('.')[0];
     var finalAgg = agreementNum.substr(0,5) + "-" + agreementNum.substr(5,2);
+	//PDF List buttons
+	var tempListHolder = "<div class='result-pdflist'>";
+	tempListHolder += "<div class='pdflist-elements-selector prev'>Previous</div>";
+	tempListHolder += "<div class='pdflist-elements active' data-indexid='"+data.indexes[i][0][0]+"' data-searchid='search-"+i+"'>&#9724;</div>";
+	for (var k = 0; k < data.indexes[i][1].length; k++) {
+	  tempListHolder += "<div class='pdflist-elements' data-indexid='"+data.indexes[i][1][k]+"' data-searchid='search-"+i+"'>&#9723;</div>";
+	}
+	tempListHolder += "<div class='pdflist-elements-selector next'>Next</div></div>";
     //Todo, set ID. return ID.
     $("#search-results").append("<div class='row search-result searchid-"+finalAgg+"' id='search-"+i+"' style='opacity:0; transform: translate(0px, 10px);'><div class='col s12'><div class='result-container'>"+
       "<div class='thumb-div' data-id='"+i+"'>"+
@@ -351,16 +410,19 @@ socket.on('searchResults', function (data) {
       "<div class='result-pdf' data-pdflink='"+data.data[i].pdf_url+"' data-pdfmeta='"+data.data[i].metadata+"'>"+
         "<div class='metadata-div'></div>"+
         "<div class='pdf-icon-div'>"+
-        '<svg x="0px" y="0px" width="45" height="45" viewBox="0 0 318.188 318.188"><g><polygon style="fill:#fff;" points="227.321,7.5 40.342,7.5 40.342,310.688 277.846,310.688 277.846,58.025"/><path style="fill:#FB3449;" d="M237.513,157.435c-3.644-6.493-16.231-8.533-22.006-9.451c-4.552-0.724-9.199-0.94-13.803-0.936c-3.615-0.024-7.177,0.154-10.693,0.354c-1.296,0.087-2.579,0.199-3.861,0.31c-1.314-1.36-2.584-2.765-3.813-4.202c-7.82-9.257-14.134-19.755-19.279-30.664c1.366-5.271,2.459-10.772,3.119-16.485c1.205-10.427,1.619-22.31-2.288-32.251c-1.349-3.431-4.946-7.608-9.096-5.528c-4.771,2.392-6.113,9.169-6.502,13.973c-0.313,3.883-0.094,7.776,0.558,11.594c0.664,3.844,1.733,7.494,2.897,11.139c1.086,3.342,2.283,6.658,3.588,9.943c-0.828,2.586-1.707,5.127-2.63,7.603c-2.152,5.643-4.479,11.003-6.717,16.161c-1.18,2.557-2.335,5.06-3.465,7.507c-3.576,7.855-7.458,15.566-11.814,23.021c-10.163,3.585-19.283,7.741-26.857,12.625c-4.063,2.625-7.652,5.476-10.641,8.603c-2.822,2.952-5.689,6.783-5.941,11.024c-0.141,2.394,0.807,4.717,2.768,6.137c2.697,2.015,6.271,1.881,9.4,1.226c10.25-2.15,18.121-10.961,24.824-18.387c4.617-5.115,9.872-11.61,15.369-19.465c0.012-0.018,0.024-0.036,0.037-0.054c9.428-2.923,19.689-5.391,30.579-7.205c4.975-0.825,10.082-1.5,15.291-1.974c3.663,3.431,7.621,6.555,11.938,9.164c3.363,2.069,6.94,3.816,10.684,5.119c3.786,1.237,7.595,2.247,11.528,2.886c1.986,0.284,4.017,0.413,6.092,0.334c4.631-0.175,11.278-1.951,11.714-7.57C238.627,160.265,238.256,158.757,237.513,157.435z M126.644,167.745c-2.169,3.36-4.261,6.382-6.232,9.041c-4.827,6.568-10.34,14.369-18.322,17.286c-1.516,0.554-3.512,1.126-5.616,1.002c-1.874-0.11-3.722-0.936-3.637-3.064c0.042-1.114,0.587-2.535,1.423-3.931c0.915-1.531,2.048-2.935,3.275-4.226c2.629-2.762,5.953-5.439,9.777-7.918c5.865-3.805,12.867-7.23,20.672-10.286C127.535,166.358,127.087,167.064,126.644,167.745z M153.866,83.485c-0.603-3.514-0.693-7.077-0.323-10.503c0.184-1.713,0.533-3.385,1.038-4.952c0.428-1.33,1.352-4.576,2.826-4.993c2.43-0.688,3.177,4.529,3.452,6.005c1.566,8.396,0.186,17.733-1.693,25.969c-0.299,1.31-0.632,2.599-0.973,3.883c-0.582-1.601-1.137-3.207-1.648-4.821C155.445,90.548,154.439,86.982,153.866,83.485z M170.549,149.765c-9.13,1.48-17.815,3.419-25.979,5.708c0.983-0.275,5.475-8.788,6.477-10.555c4.721-8.315,8.583-17.042,11.358-26.197c4.9,9.691,10.847,18.962,18.153,27.214c0.673,0.749,1.357,1.489,2.053,2.22C178.517,148.596,174.488,149.133,170.549,149.765zM232.293,161.459c-0.334,1.805-4.188,2.837-5.988,3.121c-5.316,0.836-10.94,0.167-16.028-1.542c-3.491-1.172-6.858-2.769-10.057-4.688c-3.18-1.921-6.155-4.181-8.936-6.673c3.429-0.206,6.9-0.341,10.388-0.275c3.488,0.035,7.003,0.211,10.475,0.665c6.511,0.726,13.807,2.961,18.932,7.186C232.088,160.085,232.41,160.821,232.293,161.459z"/><polygon style="fill:#FB3449;" points="235.14,32.763 40.342,32.763 40.342,7.5 227.321,7.5   "/><polygon style="fill:#D1D3D3;" points="227.321,58.025 277.846,58.025 227.321,7.5  "/>'+
-        '<text style="fill:#555;" font-size="70" font-weight="600" x="68" y="255">OPEN</text><text style="fill:#555;" font-size="70" font-weight="600" x="100" y="308">PDF</text></g></svg>'+
+        '<svg x="0px" y="0px" width="45" height="45" viewBox="0 0 318.188 318.188"><g><polygon style="fill:#fff;" points="227.321,7.5 40.342,7.5 40.342,310.688 277.846,310.688 277.846,58.025"/>'+
+        '<g transform="translate(8,5)scale(0.9)" ><path style="fill:#FB3449;" d="M237.513,157.435c-3.644-6.493-16.231-8.533-22.006-9.451c-4.552-0.724-9.199-0.94-13.803-0.936c-3.615-0.024-7.177,0.154-10.693,0.354c-1.296,0.087-2.579,0.199-3.861,0.31c-1.314-1.36-2.584-2.765-3.813-4.202c-7.82-9.257-14.134-19.755-19.279-30.664c1.366-5.271,2.459-10.772,3.119-16.485c1.205-10.427,1.619-22.31-2.288-32.251c-1.349-3.431-4.946-7.608-9.096-5.528c-4.771,2.392-6.113,9.169-6.502,13.973c-0.313,3.883-0.094,7.776,0.558,11.594c0.664,3.844,1.733,7.494,2.897,11.139c1.086,3.342,2.283,6.658,3.588,9.943c-0.828,2.586-1.707,5.127-2.63,7.603c-2.152,5.643-4.479,11.003-6.717,16.161c-1.18,2.557-2.335,5.06-3.465,7.507c-3.576,7.855-7.458,15.566-11.814,23.021c-10.163,3.585-19.283,7.741-26.857,12.625c-4.063,2.625-7.652,5.476-10.641,8.603c-2.822,2.952-5.689,6.783-5.941,11.024c-0.141,2.394,0.807,4.717,2.768,6.137c2.697,2.015,6.271,1.881,9.4,1.226c10.25-2.15,18.121-10.961,24.824-18.387c4.617-5.115,9.872-11.61,15.369-19.465c0.012-0.018,0.024-0.036,0.037-0.054c9.428-2.923,19.689-5.391,30.579-7.205c4.975-0.825,10.082-1.5,15.291-1.974c3.663,3.431,7.621,6.555,11.938,9.164c3.363,2.069,6.94,3.816,10.684,5.119c3.786,1.237,7.595,2.247,11.528,2.886c1.986,0.284,4.017,0.413,6.092,0.334c4.631-0.175,11.278-1.951,11.714-7.57C238.627,160.265,238.256,158.757,237.513,157.435z M126.644,167.745c-2.169,3.36-4.261,6.382-6.232,9.041c-4.827,6.568-10.34,14.369-18.322,17.286c-1.516,0.554-3.512,1.126-5.616,1.002c-1.874-0.11-3.722-0.936-3.637-3.064c0.042-1.114,0.587-2.535,1.423-3.931c0.915-1.531,2.048-2.935,3.275-4.226c2.629-2.762,5.953-5.439,9.777-7.918c5.865-3.805,12.867-7.23,20.672-10.286C127.535,166.358,127.087,167.064,126.644,167.745z M153.866,83.485c-0.603-3.514-0.693-7.077-0.323-10.503c0.184-1.713,0.533-3.385,1.038-4.952c0.428-1.33,1.352-4.576,2.826-4.993c2.43-0.688,3.177,4.529,3.452,6.005c1.566,8.396,0.186,17.733-1.693,25.969c-0.299,1.31-0.632,2.599-0.973,3.883c-0.582-1.601-1.137-3.207-1.648-4.821C155.445,90.548,154.439,86.982,153.866,83.485z M170.549,149.765c-9.13,1.48-17.815,3.419-25.979,5.708c0.983-0.275,5.475-8.788,6.477-10.555c4.721-8.315,8.583-17.042,11.358-26.197c4.9,9.691,10.847,18.962,18.153,27.214c0.673,0.749,1.357,1.489,2.053,2.22C178.517,148.596,174.488,149.133,170.549,149.765zM232.293,161.459c-0.334,1.805-4.188,2.837-5.988,3.121c-5.316,0.836-10.94,0.167-16.028-1.542c-3.491-1.172-6.858-2.769-10.057-4.688c-3.18-1.921-6.155-4.181-8.936-6.673c3.429-0.206,6.9-0.341,10.388-0.275c3.488,0.035,7.003,0.211,10.475,0.665c6.511,0.726,13.807,2.961,18.932,7.186C232.088,160.085,232.41,160.821,232.293,161.459z"/></g>'+
+        '<polygon style="fill:#FB3449;" points="235.14,32.763 40.342,32.763 40.342,7.5 227.321,7.5   "/>'+
+        '<polygon style="fill:#D1D3D3;" points="227.321,58.025 277.846,58.025 227.321,7.5  "/>'+
+        '<text style="fill:#555;" font-size="70" font-weight="600" x="68" y="246">OPEN</text><text style="fill:#555;" font-size="70" font-weight="600" x="100" y="306">PDF</text></g></svg>'+
         "</div>"+
         "<div class='result-pdf-page z-depth-4'>"+
           "<p class='blurry-text1'> Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Nulla Lacinia, Urna Quis Pharetra Facilisis, Arcu Augue Pharetra Ligula Ac Laoreet Mauris.</p>"+
-          "<div class='metadatalink'>Page <b>"+data.data[i].metadata.split('-')[1]+"</b></div><p class='result-text'>"+data.data[i].raw_passage+"</p>"+
+          "<div class='metadatalink'>Page <b>"+data.data[i].metadata.split('-')[1]+"</b></div><p class='result-text' data-id='"+i+"'>"+data.data[i].raw_passage+"</p>"+
           "<p class='blurry-text2'> Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Nulla Lacinia, Urna Quis Pharetra Facilisis, Arcu Augue Pharetra Ligula, Ac Laoreet Mauris.</p>"+
         "</div>"+
         "<div class='inlinepdf'></div>"+
-      "</div>"+
+      "</div>"+tempListHolder+
       ""+
       "</div></div></div>");
     //Set meta data link to correct position on left
@@ -375,6 +437,39 @@ socket.on('searchResults', function (data) {
       $("#search-"+i).find('.result-text').html(txt);
     };
   }
+  //Click next result buttons;
+  $('.pdflist-elements-selector').click(function (){
+	if($(this).hasClass('prev')){
+	  //Previously
+	  var listofPDF = $(this).parent().find('.pdflist-elements');
+	  //if first element is not active. Else do nothing.
+	  if(!$(listofPDF[0]).hasClass('active')){
+	    for(var item = 0; item < listofPDF.length; item++){
+	      if($(listofPDF[item]).hasClass('active') && (item-1) != listofPDF.length){
+		    $(listofPDF[item]).html("&#9723;").removeClass('active');
+		    $(listofPDF[(item-1)]).html("&#9724;").addClass('active');
+		    break;
+		  }
+	    }
+	  }
+	}else{
+	  //Next
+	  var listofPDF = $(this).parent().find('.pdflist-elements');
+	  for(var item = 0; item < listofPDF.length; item++){
+	    if($(listofPDF[item]).hasClass('active') && (item+1) != listofPDF.length){
+		  $(listofPDF[item]).html("&#9723;").removeClass('active');
+		  $(listofPDF[(item+1)]).html("&#9724;").addClass('active');
+		  //Call next element...
+		  console.log(data.query);
+		  socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item+1)]).data('indexid'), resultId:$(listofPDF[(item+1)]).data('searchid')});
+		  break;
+		}
+		//go to next list.
+		
+	  }
+	}
+  });
+  
   //click result to open up pdf.
   $(".pdf-icon-div").click(function (){
     //remove current pointer event.
@@ -403,6 +498,8 @@ socket.on('searchResults', function (data) {
       $currentIframe.attr('src',pdflink+pdfoptions);
       $currentIframe.attr('type','application/pdf');
       $inlinepdf.html($currentIframe);
+
+      $(this).parent().find('.metadata-div').fadeOut();
     }});
     var pos = $wordDiv.offset().top -50;
     $('html, body').animate({scrollTop:pos},300);
@@ -419,6 +516,7 @@ socket.on('searchResults', function (data) {
       orgCont.transition({height:orgCont.data('prevh')+'px', complete:function (){
         orgCont.find('.result-pdf-page').fadeIn();
         orgCont.parent().find('.pdf-icon-div').css('pointer-events','auto').fadeIn();
+        orgCont.parent().find('.metadata-div').fadeIn();
 
       }});
       orgCont.find('.inlinepdf').html("");
@@ -530,11 +628,29 @@ socket.on('searchResults', function (data) {
       });
     }
   }
+
+  //Turn Click event on;
+  var globalIsDrag = false;
+  $('.result-text').bind({
+    copy : function(){
+      console.log($(this).data('id'));
+      alert('copy behaviour detected!');
+      //Pass info.
+      socket.emit('resultCopied', {selectedId: $(this).attr("data-uid")});
+    },
+    cut : function(){
+      console.log($(this).data('id'));
+      console.log('cut behaviour detected!');
+      alert('cut behaviour detected!');
+      socket.emit('resultCopied', {selectedId: $(this).attr("data-uid")});
+    }
+  });
 });
 
 socket.on('searchMeta', function (data){
 
-  var maxWidth = $('.result-container').offset().left + $('.result-pdf-page')[0].offsetLeft - 40;
+  //var maxWidth = $('.result-container').offset().left + $('.result-pdf-page')[0].offsetLeft - 40;
+  var maxWidth = $('.result-pdf-page')[0].offsetLeft - 18;
   $('.metadata-div').width(maxWidth);
 
   for (var i = 0; i < data.length; i++) {
@@ -544,22 +660,22 @@ socket.on('searchMeta', function (data){
 
     //current agreement indicator
     if(data[i].currentagreementindicator == 'Current'){
-      var $tempTag = $("<div>").addClass('metadata-tags green lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"right").html(data[i].currentagreementindicator);
+      var $tempTag = $("<div>").addClass('metadata-tags green lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"left").html(data[i].currentagreementindicator);
       $metadataDiv.append($tempTag);
     }else if(data[i].currentagreementindicator == 'Historical'){
-      var $tempTag = $("<div>").addClass('metadata-tags red lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"right").html(data[i].currentagreementindicator);
+      var $tempTag = $("<div>").addClass('metadata-tags red lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"left").html(data[i].currentagreementindicator);
       $metadataDiv.append($tempTag);
     }else if(data[i].currentagreementindicator == 'Active'){
-      var $tempTag = $("<div>").addClass('metadata-tags amber lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"right").html(data[i].currentagreementindicator);
+      var $tempTag = $("<div>").addClass('metadata-tags amber lighten-2 tooltipped').attr('data-tooltip',"Agreement Status").attr('data-position',"left").html(data[i].currentagreementindicator);
       $metadataDiv.append($tempTag);
     }
     $metadataDiv.append("<div class='float-clear'></div>");
     //company
-    var $tempTag = $("<div>").addClass('metadata-tags tooltipped blue-grey lighten-4').attr('data-tooltip',"Company Name").attr('data-position',"right").html(data[i].companyofficialnameeng);
+    var $tempTag = $("<div>").addClass('metadata-tags tooltipped blue-grey lighten-4').attr('data-tooltip',"Company Name").attr('data-position',"left").html(data[i].companyofficialnameeng);
     $metadataDiv.append($tempTag);
     $metadataDiv.append("<div class='float-clear'></div>");
     //union
-    var $tempTag = $("<div>").addClass('metadata-tags grey darken-3 white-text tooltipped').attr('data-tooltip',"Union Name").attr('data-position',"right").html(data[i].unionnameenglish);
+    var $tempTag = $("<div>").addClass('metadata-tags grey darken-3 white-text tooltipped').attr('data-tooltip',"Union Name").attr('data-position',"left").html(data[i].unionnameenglish);
     $metadataDiv.append($tempTag);
     $metadataDiv.append("<div class='float-clear'></div>");
     /*
@@ -572,12 +688,24 @@ socket.on('searchMeta', function (data){
     $metadataDiv.append($tempTag);
     $metadataDiv.append("<div class='float-clear'></div>");
     */
-    $('.tooltipped').tooltip({delay: 50});
     //reset metadata position
-    $metadataDiv.css('left', -$metadataDiv.width() + $metadataDiv.parent().find('.result-pdf-page')[0].offsetLeft+"px");
+    //$metadataDiv.css('left', -$metadataDiv.width() + $metadataDiv.parent().find('.result-pdf-page')[0].offsetLeft+"px");
     //set the max width.
     //$metadataDiv.width(maxWidth);
   };
+  $('.metadata-tags').tooltip({delay: 50}).each(function (){
+    $("#"+$(this).data('tooltip-id')).css("margin-top", "8px").css("margin-left", "12px");
+  });
+
+  $('.metadata-div').hover(function(){
+    $(this).css('overflow','visible');
+    $(this).find('.metadata-tags').css('white-space','normal');
+    $(this).width(maxWidth + 200);
+  }, function (){
+    $(this).css('overflow','hidden');
+    $(this).find('.metadata-tags').css('white-space','nowrap');
+    $(this).width(maxWidth);
+  });
 });
 
 socket.on('autoComplete', function (data){
@@ -614,10 +742,57 @@ socket.on('pdfNamesReturn', function (data){
       $(opt).remove();
     }
   });
-  var tempSearch = $(".chosen-search-input").val();
+  var tempSearch = $("#filter-pdfname").find('.chosen-search-input').val();
   for (var i = 0; i < data.length; i++) {
-    $("#filter-pdfname-input").append('<option>'+data[i].agreementnumber+'</option>');
+    if(resultArray.indexOf(data[i].agreementnumber) == -1){
+      $("#filter-pdfname-input").append('<option>'+data[i].agreementnumber+'</option>');
+    }
   };
   $("#filter-pdfname-input").trigger("chosen:updated");
-  $(".chosen-search-input").val(tempSearch);
+  $("#filter-pdfname").find('.chosen-search-input').val(tempSearch);
 });
+
+socket.on('filterNamesReturn', function(data){
+  var resultArray = $("#filter-name-input").val();
+  $("#filter-name-input option").each(function (i, opt){
+    if(resultArray.indexOf($(opt).text()) == -1){
+      $(opt).remove();
+    }
+  });
+  var tempSearch = $("#filter-name").find('.chosen-search-input').val();
+  var currentNames = [];
+  for (var key in data){
+    for (var i = 0; i < data[key].length; i++) {
+      if(data[key][i]){
+        for (var f in data[key][i]) {
+          if(f != '_id' && currentNames.indexOf(data[key][i][f]) == -1 && resultArray.indexOf(data[key][i][f]) == -1){
+            $("#filter-name-input").append('<option>'+data[key][i][f]+'</option>');
+            currentNames.push(data[key][i][f]);
+          }
+        }
+      }
+    };
+  }
+  $("#filter-name-input").trigger("chosen:updated");
+  $("#filter-name").find('.chosen-search-input').val(tempSearch);
+});
+
+socket.on('returnNextIndexObj', function(data){
+  $("#"+data.searchid).find('.result-text').fadeOut(function (){
+	$(this).html(data.data.data[0].raw_passage);
+	$(this).fadeIn();
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+

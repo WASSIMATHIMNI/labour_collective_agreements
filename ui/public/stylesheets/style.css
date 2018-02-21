@@ -8,6 +8,13 @@ h1,h2,h3,h4{
   cursor: default;
 }
 /*Search Bar*/
+#search-button{
+  position: absolute;
+  right: 0;
+  margin-right: -42px;
+  margin-top: -38px;
+  cursor: pointer;
+}
 #search-bar-div{
   position: relative;
   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
@@ -21,7 +28,7 @@ h1,h2,h3,h4{
   cursor: default;
   font-size: 14px;
   font-weight: 100;
-  margin-bottom: 50px;
+  margin-bottom: 74px;
   transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
 #search-bar-div:hover{
@@ -64,16 +71,17 @@ h1,h2,h3,h4{
   margin-top: 4px;
 }
 #filter-div{
-  background-color: #f5f5f5;
+  background-color: #fff;
   position: absolute;
   margin-left: -21px;
-  margin-top: 20px;
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
+  margin-top: 5px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
   border: 1px solid #f5f5f5;
   opacity: 0;
   padding-left: 20px;
   padding-right: 20px;
-  padding-bottom: 20px;
+  padding-bottom: 10px;
+  z-index: -1;
 }
 #filter-title{
   margin-top: 10px;
@@ -81,7 +89,8 @@ h1,h2,h3,h4{
   font-weight: 300;
   border-bottom: 1px solid #ccc;
 }
-#filter-pdfname{
+/*PDF FILER*/
+.filter-multiple{
   font-size: 18px;
   border: 1px solid #fff;
   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
@@ -90,19 +99,105 @@ h1,h2,h3,h4{
   padding-right: 10px;
   background-color: #fff;
 }
-#filter-pdfname input{
+.filter-multiple input{
   border: none;
   padding: 0px;
   margin: 0px;
   height: 26px;
 }
-#filter-pdfname input:focus{
+.filter-multiple input:focus{
   box-shadow:none;
 }
-#filter-pdfname:focus{
+.filter-multiple:focus{
   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 0 0 1px rgba(0,0,0,0.08);
 }
-#filter-container label{
+/*public or priate */
+#filter-container-pubpri label{
+  color: #ffb300;
+}
+#filter-pubpri .chosen-single{
+  color: #ffb300;
+}
+#filter-pubpri .active-result{
+  color: #ffb300;
+}
+#filter-pubpri .highlighted{
+  background-color: #ffecb3;
+}
+#filter-pubpri .active-result:hover{
+  background-color: #ffecb3;
+}
+#filter-pubpri .search-choice{
+  background-color: #ffecb3;
+  color: #ffb300;
+}
+/*union or company name */
+#filter-container-name label{
+  color: #8e24aa;
+}
+#filter-name .chosen-single{
+  color: #8e24aa;
+}
+#filter-name .active-result{
+  color: #8e24aa;
+}
+#filter-name .highlighted{
+  background-color: #e1bee7;
+}
+#filter-name .active-result:hover{
+  background-color: #e1bee7;
+}
+#filter-name .search-choice{
+  background-color: #e1bee7;
+  color: #8e24aa;
+}
+
+/*Provice Filter*/
+#filter-container-province label{
+  color: #00897b;
+}
+#filter-province .chosen-single{
+  color: #00897b;
+}
+#filter-province .active-result{
+  color: #00897b;
+}
+#filter-province .highlighted{
+  background-color: #b2dfdb;
+}
+#filter-province .active-result:hover{
+  background-color: #b2dfdb;
+}
+#filter-province .search-choice{
+  background-color: #b2dfdb;
+  color: #00897b;
+}
+
+/*Agreement Status Filter*/
+#filter-container-agreement label{
+  color: #3949ab;
+}
+#filter-agreement .chosen-single{
+  color: #3949ab;
+}
+#filter-agreement .active-result{
+  color: #3949ab;
+}
+#filter-agreement .highlighted{
+  background-color: #c5cae9;
+}
+#filter-agreement .active-result:hover{
+  background-color: #c5cae9;
+}
+#filter-agreement .search-choice{
+  background-color: #c5cae9;
+  color: #3949ab;
+}
+
+.filter-container{
+  margin-bottom: 8px;
+}
+.filter-container label{
   font-weight: 300;
   font-size: 14px;
   margin-bottom: 2px;
@@ -125,9 +220,27 @@ h1,h2,h3,h4{
 /*chosen alteration*/
 .chosen-container-multi{
   margin-left: -10px;
+  margin-top: -2px;
   box-shadow: none !important;
   background-image:none !important;
   border: none !important;
+  font-weight: 300;
+}
+.chosen-container-single{
+  margin-left: -12px;
+  font-weight: 300;
+}
+.chosen-container-single a{
+  box-shadow: none !important;
+  background-image:none !important;
+  border: none !important;
+}
+.chosen-drop{
+  margin-top: 1px !important;
+  border-radius: 0px !important;
+}
+.chosen-single div{
+  margin-right: -15px;
 }
 .chosen-choices{
   border: none !important;
@@ -155,7 +268,7 @@ h1,h2,h3,h4{
   position: absolute;
   left: 50%;
   transform: translate(-50%, 0);
-  margin-top: -50px;
+  margin-top: -20px;
 }
 @-webkit-keyframes lds-ripple {
   0% {
@@ -248,6 +361,7 @@ h1,h2,h3,h4{
   font-weight: 100;
   padding: 30px;
   padding-top: 25px;
+  padding-bottom: 8px;
 }
 .result-title{
   font-size: 18px;
@@ -389,7 +503,8 @@ h1,h2,h3,h4{
   position: absolute;
   float: right;
   margin-top: 3px;
-  left: 0;
+  left: 18px;
+  overflow: hidden;
 }
 .metadata-tags{
   color: #333;
@@ -400,9 +515,29 @@ h1,h2,h3,h4{
   border-radius: 3px;
   margin-right: 4px;
   margin-bottom: 4px;
-  float: right;
+  float: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.result-pdflist{
+  text-align:center;
+  width:100%;
+}
+.pdflist-elements{
+  width: 21px;
+  display:inline-block;
   cursor: pointer;
 }
+.pdflist-elements-selector{
+  display:inline-block;
+  cursor: pointer;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.pdflist-elements-selector :hover{
+  font-weight: 300;
+}
+
 /*Tutorial*/
 #tutorial-div{
   background: url(../images/iefilter.jpg) no-repeat -999px -999px;
@@ -472,7 +607,36 @@ h1,h2,h3,h4{
   display: none;
 }
 
-
+/*filtered container*/
+#filter-container{
+  position: absolute;
+  z-index: 8;
+  width: 66%;
+}
+#filter-display-title{
+  font-size: 14px;
+  font-weight: 300;
+  margin-top: -70px;
+  color: #777;
+  opacity: 0;
+  width: 66%;
+}
+.filtertag{
+  float: left;
+  border: 1px solid black;
+}
+.filtertag{
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  padding: 3px 3px 3px 3px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  position: relative;
+  line-height: 13px;
+  font-size: 13px;
+  float: left;
+  font-weight: 100;
+}
 /*General*/
 
 .float-clear{

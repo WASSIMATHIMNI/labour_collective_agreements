@@ -57,41 +57,14 @@ var feedbackModel = require('./models/Feedback');
 var filedataModel = require('./models/FileData');
 
 io.on('connection', function (socket) {
-  //autocomplete
-  socket.on("autoCompleteAttempt", function (searchObj){
-    autoCompleteSearch.find({searchStr: {$regex:'.*'+searchObj.searchInput+'.*'}}, null, {limit:5, sort:{selectedNum:-1}}, function (err, data){
-      //return autocomplete list
-      socket.emit('autoComplete', data);
-    });
-  });
-  //autocomplete selected
-  socket.on('autoCompleteSelected', function (selectedObj){
-    autoCompleteSearch.findOneAndUpdate({_id:mongoose.Types.ObjectId(selectedObj.selectedId)}, {$inc:{selectedNum:1}}, function (err){
-      if (err) return console.error(err);
-    });
-  });
-
-  //On Search
-  socket.on('searchAttempt', function (searchObj){
-    if(searchObj.searchFilter.pdfName){
-      //TODO ADD QUOTES!
-      //var tempStringArray = "'" + searchObj.searchFilter.pdfName.join("','") + "'";
-      var pdfparam = "["+ searchObj.searchFilter.pdfName + "]";
-	  console.log(pdfparam);
-    }else{
-      var pdfparam = "[]";
-    }
-    var result = querystring.stringify({query: searchObj.searchInput, pdfs:pdfparam});
-
-
+  function callPython(searchObj, result){
     //call localhost 5000
     var options = {
-      host: 'localhost',
+      host: '127.0.0.1',
       port: 5000,
       path: '/search_results?'+result,
       method: 'GET'
     };
-
     var req = http.get(options, function (response){
       var str = "";
       response.on('data', function (chunk) {
@@ -125,8 +98,112 @@ io.on('connection', function (socket) {
       console.log(e);
       //push python connection error.
     });
+  }
+
+  //autocomplete
+  socket.on("autoCompleteAttempt", function (searchObj){
+    autoCompleteSearch.find({searchStr: {$regex:'.*'+searchObj.searchInput+'.*'}}, null, {limit:5, sort:{selectedNum:-1}}, function (err, data){
+      //return autocomplete list
+      socket.emit('autoComplete', data);
+    });
+  });
+  //autocomplete selected
+  socket.on('autoCompleteSelected', function (selectedObj){
+    autoCompleteSearch.findOneAndUpdate({_id:mongoose.Types.ObjectId(selectedObj.selectedId)}, {$inc:{selectedNum:1}}, function (err){
+      if (err) return console.error(err);
+    });
   });
 
+  //On Search
+  socket.on('searchAttempt', function (searchObj){
+    var fullPDFList = "";
+    var noParams = true;
+    for(var key in searchObj.searchFilter){
+      if(searchObj.searchFilter[key].length > 0){
+        noParams = false;
+      }
+    }
+    //Skipped if no params are set, to improve speed.
+    if(noParams){
+      var result = querystring.stringify({query: searchObj.searchInput, pdfs: fullPDFList});
+      callPython(searchObj, result);
+    }else{
+      var pdfparam = "[";
+      var tempSearchParam = [];
+      for(var key in searchObj.searchFilter){
+        if(searchObj.searchFilter[key].length > 0){
+          if(key == 'pdfName'){
+            pdfparam += searchObj.searchFilter.pdfName;
+          }
+          if(key == 'name'){
+            if(searchObj.searchFilter.name.length > 0){
+              tempSearchParam.push({$or: [{unionnameenglish:searchObj.searchFilter.name}, {unionnamefrench: searchObj.searchFilter.name},{unionacronymenglish: searchObj.searchFilter.name}, {unionacronymfrench:searchObj.searchFilter.name},{companyofficialnameeng: searchObj.searchFilter.name}, {companyofficialnamefra: searchObj.searchFilter.name}]});
+            }
+          }
+          if (key == 'province'){
+            if(searchObj.searchFilter.province.length > 0){
+              tempSearchParam.push({$or: [{provinceenglish : searchObj.searchFilter.province}, {provincefrench : searchObj.searchFilter.province}]});
+            }
+          }
+          if (key == 'pubpri'){
+            if(searchObj.searchFilter.pubpri.length > 0){
+              tempSearchParam.push({publicprivate : searchObj.searchFilter.pubpri});
+            }
+          }
+          if (key == 'agreement'){
+            if(searchObj.searchFilter.agreement.length > 0){
+              tempSearchParam.push({currentagreementindicator : searchObj.searchFilter.agreement});
+            }
+          }
+        }
+      }
+      if(tempSearchParam.length > 0){
+        filedataModel.find({
+          $and:tempSearchParam
+        }, {agreementnumber:1, _id:0}, function (err, data){
+          if (err) return console.error(err);
+          for (var i = 0; i < data.length; i++) {
+            pdfparam += "'"+data[i].agreementnumber.replace('-','') + "',";
+          }
+          pdfparam = pdfparam.slice(0, -1);
+          pdfparam += "]";
+          var result = querystring.stringify({query: searchObj.searchInput, pdfs:pdfparam});
+          callPython(searchObj, result);
+        });
+      }else{
+        pdfparam += "]";
+        var result = querystring.stringify({query: searchObj.searchInput, pdfs:pdfparam});
+        callPython(searchObj, result);
+      }
+    }
+  });
+
+  //Grab index from Python
+  socket.on('grabNextIndex', function(data){
+    var result = querystring.stringify({query: data.query, indexes: "["+data.indexId+"]"});
+    //call localhost 5000
+    var options = {
+      host: '127.0.0.1',
+      port: 5000,
+      path: '/passage_indexes?'+result,
+      method: 'GET'
+    };
+    var req = http.get(options, function (response){
+      var str = "";
+      response.on('data', function (chunk) {
+        str += chunk;
+      });
+      response.on('end', function () {
+        var finalObj = {data: JSON.parse(str), searchid:data.resultId};
+        //return serach results
+        socket.emit('returnNextIndexObj', finalObj);
+      });
+    });
+    req.on('error', function (e){
+      console.log(e);
+      //push python connection error.
+    });
+  });
   //On Thumbs feedback
   socket.on('feedbackSend', function (feedbackObj){
     if(feedbackObj.oid){
@@ -152,7 +229,92 @@ io.on('connection', function (socket) {
       socket.emit('pdfNamesReturn', data);
     });
   });
+  //union or company name search
+  socket.on('filterNameSearch', function (searchObj){
+    var unionName;
+    var unionNamef;
+    var unionAc;
+    var unionAcf;
+    var compName;
+    var compNamef;
+
+    filedataModel.find({unionnameenglish:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{unionnameenglish:1}).limit(20).exec(function(err, data) {
+      if (err) return console.error(err);
+      unionName = data;
+      filedataModel.find({unionnamefrench:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{unionnamefrench:1}).limit(20).exec(function(err, data) {
+        if (err) return console.error(err);
+        unionNamef = data;
+        filedataModel.find({unionacronymenglish:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{unionacronymenglish:1}).limit(20).exec(function(err, data) {
+          if (err) return console.error(err);
+          unionAc = data;
+          filedataModel.find({unionacronymfrench:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{unionacronymfrench:1}).limit(20).exec(function(err, data) {
+            if (err) return console.error(err);
+            unionAcf = data;
+            filedataModel.find({companyofficialnameeng:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{companyofficialnameeng:1}).limit(20).exec(function(err, data) {
+              if (err) return console.error(err);
+              compName = data;
+              filedataModel.find({companyofficialnamefra:{$regex:'.*'+searchObj.searchInput+'.*', $options : 'i'}},{companyofficialnamefra:1}).limit(20).exec(function(err, data) {
+                if (err) return console.error(err);
+                compNamef = data;
+                socket.emit('filterNamesReturn', {unionName:unionName, unionNamef:unionNamef, unionAc:unionAc, unionAcf:unionAcf, compName:compName, compNamef:compNamef});
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });
+
+/*Temp Read File*/
+/*
+var async = require('async');
+var inputFile = 'iris_to_negotech_extract.tab';
+var parser = parse({delimiter: '\t', quote:''}, function (err, data) {
+  async.eachSeries(data, function (record, callback) {
+    console.log(record);
+    // do something with the line
+    var tempData = {
+      agreementnumber : record[0],
+      effectivedate : record[1],
+      expirydate : record[2],
+      settlementdate : record[3],
+      jurprov : record[4],
+      jurisdictioncode : record[5],
+      employeecount : record[6],
+      naicscodeid_firsttwodigit : record[7],
+      publicprivate : record[8],
+      naicscodeid : record[9],
+      summaryreportavailabilityindicator : record[10],
+      province : record[11],
+      provinceenglish : record[12],
+      provincefrench : record[13],
+      citynameenglish : record[14],
+      citynamefrench : record[15],
+      cityprovincenameenglish : record[16],
+      cityprovincenamefrench : record[17],
+      unionid : record[18],
+      unionnameenglish : record[19],
+      unionnamefrench : record[20],
+      affiliationtext : record[21],
+      unionacronymenglish : record[22],
+      unionacronymfrench : record[23],
+      noccodeid : record[24],
+      name_e : record[25],
+      name_f : record[26],
+      companyofficialnameeng : record[27],
+      companyofficialnamefra : record[28],
+      currentagreementindicator: record[29]
+    };
+    var insertFileData = new filedataModel(tempData);
+    insertFileData.save(function (err){
+      if (err) return console.error(err);
+      callback();
+    });
+  })
+});
+fs.createReadStream(inputFile).pipe(parser);
+*/
 
 var job = new CronJob({
   cronTime: '00 00 23 * * 1-5',
@@ -232,7 +394,7 @@ var job = new CronJob({
   start: false,
   timeZone: 'America/Toronto'
 });
-job.start();
+//job.start();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -11,27 +11,74 @@ block content
         div.col.s12.m10.l8.offset-m1.offset-l2
           div#filter-btn
             svg.tooltipped(data-position="top", data-delay="50", data-tooltip="Filter", width="40", height="40", viewBox="0 0 48 48")
-              rect(fill='#777' x='6' y='13' width='36' height='5' data-x='6')
-              rect(fill='#777' x='12' y='23' width='24' height='5' data-x='12')
-              rect(fill='#777' x='19' y='33' width='10' height='5' data-x='19')
+              rect(fill='#777' x='6' y='13' width='36' height='5' data-x='6').filterbars
+              rect(fill='#777' x='12' y='23' width='24' height='5' data-x='12').filterbars
+              rect(fill='#777' x='19' y='33' width='10' height='5' data-x='19').filterbars
           div#search-bar-div
             div#search-filters
             input#search-bar
+            div#search-button
+              svg.tooltipped(data-position="top", data-delay="50", data-tooltip="Search", height="36" viewBox="0 0 24 24" width="36")
+                path(fill="#777",d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z")
             div#auto-complete
             div#filter-div
               div#filter-title Additional Search Filters
-              div#filter-container
+              div.filter-container
                 label Agreement Number
-                div#filter-pdfname
+                div#filter-pdfname.filter-multiple
                   select#filter-pdfname-input(multiple="true")
+              div.filter-container#filter-container-name
+                label Union or Company Name
+                div#filter-name.filter-multiple
+                  select#filter-name-input(multiple="true")
+              div.filter-container#filter-container-agreement
+                label Agreement Status
+                div#filter-agreement.filter-multiple
+                  select#filter-agreement-input(multiple="true")
+                    option 
+                    option Current
+                    option Active
+                    option Historical
+              div.filter-container#filter-container-pubpri
+                label Public or Private Sector
+                div#filter-pubpri.filter-multiple
+                  select#filter-pubpri-input(multiple="true")
+                    option 
+                    option Public
+                    option Private
+              div.filter-container#filter-container-province
+                label Province
+                div#filter-province.filter-multiple
+                  select#filter-province-input(multiple="true")
+                    option
+                    option New Brunswick
+                    option North West Territories
+                    option New Brunswick
+                    option Northwest Territories
+                    option Manitoba
+                    option Multiprovince
+                    option Ontario
+                    option Quebec
+                    option British Columbia
+                    option Alberta
+                    option Nova Scotia
+                    option Prince Edward Island
+                    option Saskatchewan
+                    option Nunavut
+                    option Newfoundland and Labrador
+                    option Yukon Territory   
+          div#filter-container
+            div#filter-display-title Active Filters
+            div#filter-display-currentactive
       div#tut1explain1.tut1explain and type in certain keywords, such as...
       div#tut1explain2.tut1explain "Computer system sick days"
       div#tut1explain3.tut1explain "Employees required to do overtime if asked"
       div#tut1explain4.tut1explain "Border service pay rates"
       div#tut1explain5.tut1explain Press enter to search.
     div#search-results
-    div.fixed-action-btn#tags-btn-div
-      a.btn-floating.btn-large.purple.lighten-3.tooltipped(data-position="left", data-tooltip="Manage Tags", data-current='en')#tags-btn Tags
+      //
+        div.fixed-action-btn#tags-btn-div
+          a.btn-floating.btn-large.purple.lighten-3.tooltipped(data-position="left", data-tooltip="Manage Tags", data-current='en')#tags-btn Tags
     div.fixed-action-btn#help-btn-div
       a.btn-floating.btn-large.brown.lighten-2.tooltipped#tutorial-btn(data-position="left", data-delay="100", data-tooltip="Tutorial")
         svg(width="30", height="30", viewBox="0 0 48 48").btnsvgs
