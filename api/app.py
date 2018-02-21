@@ -6,6 +6,8 @@ from flask import send_from_directory
 from flask import jsonify
 from flask import render_template
 from flask import jsonify
+from collections import OrderedDict
+from unidecode import unidecode
 import helpers.GenerateVectors as GV
 import ast
 
@@ -24,19 +26,19 @@ app = Flask(__name__)
 
 # indexed documents to search against
 
-idx_to_filename = pickle.load(open("data/models/idx_to_filename.pkl", 'rb'))
-idx_to_metadata = pickle.load(open("data/models/idx_to_metadata.pkl", 'rb'))
-allvocab_to_idx = pickle.load(open("data/models/allvocab_to_idx.pkl", 'rb'))
+idx_to_filename = pickle.load(open("./models/idx_to_filename.pkl",'rb'))
+idx_to_metadata = pickle.load(open("./models/idx_to_metadata.pkl",'rb'))
+allvocab_to_idx = pickle.load(open("./models/allvocab_to_idx.pkl",'rb'))
 allvocab = allvocab_to_idx.keys()
-wvvocab_to_idx = pickle.load(open("data/models/wvvocab_to_idx.pkl", 'rb'))
+wvvocab_to_idx = pickle.load(open("./models/wvvocab_to_idx.pkl",'rb'))
 wvvocab = wvvocab_to_idx.keys()
-counts = pickle.load(open("data/models/word_counts.pkl", 'rb'))
-embedding_matrix = pickle.load(open("data/models/embedding_matrix.pkl", 'rb'))
-sentence_vectors = pickle.load(open("data/models/sentence_vectors.pkl", 'rb'))
-sentence_words = pickle.load(open("data/models/sentence_words.pkl", 'rb'))
-sentence_words_idx = pickle.load(open("data/models/sentence_words_idx.pkl", 'rb'))
-english_words = pickle.load(open("data/models/english_words.pkl", 'rb')).keys()
-french_words = pickle.load(open("data/models/french_words.pkl", 'rb')).keys()
+counts = pickle.load(open("./models/word_counts.pkl",'rb'))
+embedding_matrix = pickle.load(open("./models/embedding_matrix.pkl",'rb'))
+sentence_vectors = pickle.load(open("./models/sentence_vectors.pkl",'rb'))
+sentence_words = pickle.load(open("./models/sentence_words.pkl",'rb'))
+sentence_words_idx = pickle.load(open("./models/sentence_words_idx.pkl",'rb'))
+english_words = pickle.load(open("./models/english_words.pkl",'rb')).keys()
+french_words = pickle.load(open("./models/french_words.pkl",'rb')).keys()
 
 EMBEDDING_DIM = 100
 NUM_ANSWERS = 10
@@ -294,11 +296,18 @@ def search():
 
     query = str(request.args.get('query'))
 
-    page = str(request.args.get('query'))
-    if page is None: page = 1
-
+    
+    page = 1
+    if request.args.get('page') is not None:
+        page = int(request.args.get('page'))
+	
+    pdfs = None
     if request.args.get('pdfs') is not None:
-        pdfs = ast.literal_eval(request.args.get('pdfs'));
+        print(request.args.get('pdfs'))
+        try:
+            pdfs = ast.literal_eval(request.args.get('pdfs'))
+        except:
+            print("Processing for all pdfs")
 
     answer_indexes = retrieve_closest_passages_indexes(query,from_pdfs=pdfs)[(page-1)*NUM_ANSWERS:page*NUM_ANSWERS]
     displayed_indexes = [answer[0][0] for answer in answer_indexes]
@@ -310,7 +319,7 @@ def search():
     return jsonify(results)
 
 
-@app.route("passage_indexes",methods = ["POST","GET"])
+@app.route("/passage_indexes",methods = ["POST","GET"])
 def passage_indexes():
 
     query = str(request.args.get('query'))
