@@ -340,9 +340,31 @@ function closeTutorial(){
   $("#tutorial-btn").show();
   $("#close-btn-div").hide();
 }
+//Highlight Function
+function highlightText(data){
+  //New highlight stuff
+  if (data.highlights.length == 0){
+    return data.raw_passage;
+  }
+  var highlightedText = "";
+  for (var h = 0; h < data.highlights.length; h++) {
+    var highlightSpot = "<span class='highlight'>" + data.raw_passage.substring(data.highlights[h][0],data.highlights[h][1]) + "</span>";
+    if(h == 0){
+      highlightedText += data.raw_passage.substring(0,data.highlights[h][0]);
+    }else{
+      highlightedText += data.raw_passage.substring(data.highlights[(h-1)][1],data.highlights[h][0]);
+    }
+    highlightedText += highlightSpot;
+    
+    //attach all at end;
+    if((h+1) == data.highlights.length){
+      highlightedText += data.raw_passage.substring(data.highlights[h][1]);
+    }
+  }
+  return highlightedText;
+}
 //Socket Io
 socket.on('searchResults', function (data) {
-  console.log(data);
   //hide loading gif
   $("#loading-container").fadeOut(function(){
     $(this).remove();
@@ -356,7 +378,7 @@ socket.on('searchResults', function (data) {
   }
   $("#search-results-count").transition({opacity:1,delay:300});
   */
-
+  /*
   var highlightResults = data.query.split(' ');
   var stopwords = [" ","a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any","are","aren't","as","at","be","because","been","before","being","below","between","both","but","by","can't","cannot","could","couldn't","did","didn't","do","does","doesn't","doing","don't","down","during","each","few","for","from","further","had","hadn't","has","hasn't","have","haven't","having","he","he'd","he'll","he's","her","here","here's","hers","herself","him","himself","his","how","how's","i","i'd","i'll","i'm","i've","if","in","into","is","isn't","it","it's","its","itself","let's","me","more","most","mustn't","my","myself","no","nor","not","of","off","on","once","only","or","other","ought","our","ours","ourselves","out","over","own","same","shan't","she","she'd","she'll","she's","should","shouldn't","so","some","such","than","that","that's","the","their","theirs","them","themselves","then","there","there's","these","they","they'd","they'll","they're","they've","this","those","through","to","too","under","until","up","very","was","wasn't","we","we'd","we'll","we're","we've","were","weren't","what","what's","when","when's","where","where's","which","while","who","who's","whom","why","why's","with","won't","would","wouldn't","you","you'd","you'll","you're","you've","your","yours","yourself","yourselves"];
   for(var i = highlightResults.length-1; i--;){
@@ -369,6 +391,8 @@ socket.on('searchResults', function (data) {
       }
     }
   };
+  */
+
   //Results
   for (var i = 0; i < data.data.length; i++) {
 
@@ -384,14 +408,21 @@ socket.on('searchResults', function (data) {
     var tempPDFName = data.data[i].pdf_url.split('/');
     var agreementNum = data.data[i].pdf_url.split('/').slice(-1)[0].split('.')[0];
     var finalAgg = agreementNum.substr(0,5) + "-" + agreementNum.substr(5,2);
-	//PDF List buttons
-	var tempListHolder = "<div class='result-pdflist'>";
-	tempListHolder += "<div class='pdflist-elements-selector prev'>Previous</div>";
-	tempListHolder += "<div class='pdflist-elements active' data-indexid='"+data.indexes[i][0][0]+"' data-searchid='search-"+i+"'>&#9724;</div>";
-	for (var k = 0; k < data.indexes[i][1].length; k++) {
-	  tempListHolder += "<div class='pdflist-elements' data-indexid='"+data.indexes[i][1][k]+"' data-searchid='search-"+i+"'>&#9723;</div>";
-	}
-	tempListHolder += "<div class='pdflist-elements-selector next'>Next</div></div>";
+  	//PDF List buttons
+  	var tempListHolder = "<div class='result-pdflist'>";
+  	tempListHolder += "<div class='pdflist-elements-selector prev'>Previous</div>";
+  	tempListHolder += "<div class='pdflist-elements active' data-indexid='"+data.indexes[i][0][0]+"' data-searchid='search-"+i+"'>&#9724;</div>";
+  	for (var k = 0; k < data.indexes[i][1].length; k++) {
+  	  tempListHolder += "<div class='pdflist-elements' data-indexid='"+data.indexes[i][1][k]+"' data-searchid='search-"+i+"'>&#9723;</div>";
+  	}
+    if(data.indexes[i][1].length == 0){
+      tempListHolder += "<div class='pdflist-elements-selector next'>Load More</div></div>";
+    }else{
+      tempListHolder += "<div class='pdflist-elements-selector next'>Next</div></div>";
+    }
+
+    var highlightedText = highlightText(data.data[i]);
+
     //Todo, set ID. return ID.
     $("#search-results").append("<div class='row search-result searchid-"+finalAgg+"' id='search-"+i+"' style='opacity:0; transform: translate(0px, 10px);'><div class='col s12'><div class='result-container'>"+
       "<div class='thumb-div' data-id='"+i+"'>"+
@@ -418,16 +449,22 @@ socket.on('searchResults', function (data) {
         "</div>"+
         "<div class='result-pdf-page z-depth-4'>"+
           "<p class='blurry-text1'> Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Nulla Lacinia, Urna Quis Pharetra Facilisis, Arcu Augue Pharetra Ligula Ac Laoreet Mauris.</p>"+
-          "<div class='metadatalink'>Page <b>"+data.data[i].metadata.split('-')[1]+"</b></div><p class='result-text' data-id='"+i+"'>"+data.data[i].raw_passage+"</p>"+
+          "<div class='metadatalink'>Page <b>"+data.data[i].metadata.split('-')[1]+"</b></div><p class='result-text' data-id='"+i+"'>"+highlightedText+"</p>"+
           "<p class='blurry-text2'> Lorem Ipsum Dolor Sit Amet, Consectetur Adipiscing Elit. Nulla Lacinia, Urna Quis Pharetra Facilisis, Arcu Augue Pharetra Ligula, Ac Laoreet Mauris.</p>"+
         "</div>"+
         "<div class='inlinepdf'></div>"+
       "</div>"+tempListHolder+
       ""+
       "</div></div></div>");
+    
+    //metadatalink  30
+    $("#search-" + i).find('.metadatalink').css('margin-bottom', ($("#search-" + i).find('.result-pdflist').height() + 9)+'px');
+
+
     //Set meta data link to correct position on left
     $("#search-"+i).transition({opacity:1, y:0, delay: 100 + i*250});
     //Highlight text
+    /*
     for (var j = 0; j < highlightResults.length; j++) {
       var reg = new RegExp(highlightResults[j], 'gi');
       var text = $("#search-"+i).find('.result-text').html();
@@ -436,38 +473,86 @@ socket.on('searchResults', function (data) {
       });
       $("#search-"+i).find('.result-text').html(txt);
     };
+    */
+
   }
   //Click next result buttons;
   $('.pdflist-elements-selector').click(function (){
-	if($(this).hasClass('prev')){
-	  //Previously
-	  var listofPDF = $(this).parent().find('.pdflist-elements');
-	  //if first element is not active. Else do nothing.
-	  if(!$(listofPDF[0]).hasClass('active')){
-	    for(var item = 0; item < listofPDF.length; item++){
-	      if($(listofPDF[item]).hasClass('active') && (item-1) != listofPDF.length){
-		    $(listofPDF[item]).html("&#9723;").removeClass('active');
-		    $(listofPDF[(item-1)]).html("&#9724;").addClass('active');
-		    break;
-		  }
-	    }
-	  }
-	}else{
-	  //Next
-	  var listofPDF = $(this).parent().find('.pdflist-elements');
-	  for(var item = 0; item < listofPDF.length; item++){
-	    if($(listofPDF[item]).hasClass('active') && (item+1) != listofPDF.length){
-		  $(listofPDF[item]).html("&#9723;").removeClass('active');
-		  $(listofPDF[(item+1)]).html("&#9724;").addClass('active');
-		  //Call next element...
-		  console.log(data.query);
-		  socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item+1)]).data('indexid'), resultId:$(listofPDF[(item+1)]).data('searchid')});
-		  break;
-		}
-		//go to next list.
-		
-	  }
-	}
+  	if($(this).hasClass('prev')){
+  	  //Previously
+  	  var listofPDF = $(this).parent().find('.pdflist-elements');
+  	  //if first element is not active. Else do nothing.
+  	  if(!$(listofPDF[0]).hasClass('active')){
+  	    for(var item = 0; item < listofPDF.length; item++){
+  	      if($(listofPDF[item]).hasClass('active') && (item-1) != listofPDF.length){
+    		    $(listofPDF[item]).html("&#9723;").removeClass('active');
+            //Change load more to next if possible.
+            $(this).parent().find('.next').text('Next');
+    		    $(listofPDF[(item-1)]).html("&#9724;").addClass('active');
+            socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item-1)]).data('indexid'), resultId:$(listofPDF[(item-1)]).data('searchid')});
+            //Update page #
+    		    break;
+    		  }
+  	    }
+  	  }
+  	}else{
+  	  //Next
+  	  var listofPDF = $(this).parent().find('.pdflist-elements');
+      var loadMoreBool = true;
+  	  for(var item = 0; item < listofPDF.length; item++){
+
+        if(item == (listofPDF.length-2)){
+          $(this).parent().find('.next').text('Load More');
+        }
+
+  	    if($(listofPDF[item]).hasClass('active') && (item+1) != listofPDF.length){
+    		  $(listofPDF[item]).html("&#9723;").removeClass('active');
+    		  $(listofPDF[(item+1)]).html("&#9724;").addClass('active');
+    		  socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item+1)]).data('indexid'), resultId:$(listofPDF[(item+1)]).data('searchid')});
+          //Update page #
+          loadMoreBool = false;
+    		  break;
+    		}
+  	  }
+      if(loadMoreBool){
+
+        //No result found load the third array.
+        var tempNext = $(this).parent().find('.next');
+        var prevElement = $(tempNext).prev();
+        var tempIndex;
+        if($(this).parent().data('thirdindexid') == undefined){
+          tempIndex = 0;
+        }else{
+          tempIndex = $(this).parent().attr('data-thirdindexid');
+          tempIndex = parseInt(tempIndex) + 1;
+        }
+
+        if(tempIndex < (data.indexes[prevElement.data('searchid').split('-')[1]][2].length - 1)){
+          prevElement.removeClass('active').html("&#9723;");
+          $(this).parent().attr('data-thirdindexid', tempIndex);
+          var tempDiv = $("<div class='pdflist-elements active' data-indexid='"+data.indexes[prevElement.data('searchid').split('-')[1]][2][tempIndex]+"' data-searchid='search-"+prevElement.data('searchid').split('-')[1]+"' >").html('&#9724;'); 
+          tempDiv.insertBefore(tempNext);
+          //emit call.
+          socket.emit('grabNextIndex', {query:data.query, indexId:data.indexes[prevElement.data('searchid').split('-')[1]][2][tempIndex], resultId: "search-"+prevElement.data('searchid').split('-')[1]});
+        }
+      }
+  	}
+  });
+  $('.pdflist-elements').click(function (){
+    var listofPDF = $(this).parent().find('.pdflist-elements');
+    for(var item = 0; item < listofPDF.length; item++){
+      if($(listofPDF[item]).hasClass('active')){
+        $(listofPDF[item]).html("&#9723;").removeClass('active');
+        if(item != (listofPDF.length - 2)){
+          $(this).parent().find('.next').text('Next');
+        }
+        break;
+      }
+    }
+
+    $(this).html("&#9724;").addClass('active');
+
+    socket.emit('grabNextIndex', {query:data.query, indexId:$(this).data('indexid'), resultId:$(this).data('searchid')});
   });
   
   //click result to open up pdf.
@@ -475,6 +560,8 @@ socket.on('searchResults', function (data) {
     //remove current pointer event.
     $(this).css('pointer-events','none');
     $(this).fadeOut();
+    //result-pdflist
+    $(this).parent().parent().find('.result-pdflist').fadeOut();
 
     //window.open('/pdf/GraphBasics.pdf', '_blank');
     var $wordDiv = $(this).parent();
@@ -483,6 +570,7 @@ socket.on('searchResults', function (data) {
     $wordDiv.attr('data-prevh',$wordDiv.height());
     $wordDiv.height($pdfdiv.outerHeight());
 
+    $(this).parent().parent().css('padding-bottom', '25px');
     $pdfdiv.fadeOut();
     $wordDiv.transition({height:($(window).height()-100)+'px', complete:function (){
       //set inlinepdf size;
@@ -512,14 +600,17 @@ socket.on('searchResults', function (data) {
     $wordDiv.parent().append($closebtn);
 
     $closebtn.click(function (){
+      $(this).parent().css('padding-bottom', '4px');
       var orgCont = $(this).parent().find('.result-pdf');
+      $(this).parent().parent().find('.result-pdflist').fadeIn();
       orgCont.transition({height:orgCont.data('prevh')+'px', complete:function (){
         orgCont.find('.result-pdf-page').fadeIn();
         orgCont.parent().find('.pdf-icon-div').css('pointer-events','auto').fadeIn();
         orgCont.parent().find('.metadata-div').fadeIn();
-
+        orgCont.attr('style', "");
       }});
       orgCont.find('.inlinepdf').html("");
+      orgCont.find('.inlinepdf').attr('style', "");
       $(this).remove();
     });
   });
@@ -779,9 +870,17 @@ socket.on('filterNamesReturn', function(data){
 
 socket.on('returnNextIndexObj', function(data){
   $("#"+data.searchid).find('.result-text').fadeOut(function (){
-	$(this).html(data.data.data[0].raw_passage);
-	$(this).fadeIn();
+    var highlightedText = highlightText(data.data.data[0]);
+  	$(this).html(highlightedText);
+  	$(this).fadeIn();
   });
+  $("#"+data.searchid).find('.metadatalink').fadeOut(function (){
+    $(this).html("Page <b>"+data.data.data[0].metadata.split('-')[1]+"</b>");
+    $(this).fadeIn();
+  });
+  //change pdf link metadata
+  //result-pdf
+  $("#"+data.searchid).find('result-pdf').attr('data-pdfmeta', data.data.data[0].metadata);
 });
 
 

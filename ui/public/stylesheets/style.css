@@ -82,6 +82,7 @@ h1,h2,h3,h4{
   padding-right: 20px;
   padding-bottom: 10px;
   z-index: -1;
+  display: none;
 }
 #filter-title{
   margin-top: 10px;
@@ -361,7 +362,7 @@ h1,h2,h3,h4{
   font-weight: 100;
   padding: 30px;
   padding-top: 25px;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 .result-title{
   font-size: 18px;
@@ -522,6 +523,9 @@ h1,h2,h3,h4{
 .result-pdflist{
   text-align:center;
   width:100%;
+  margin-top: 4px;
+  padding-left: 50px;
+  padding-right: 50px;
 }
 .pdflist-elements{
   width: 21px;
