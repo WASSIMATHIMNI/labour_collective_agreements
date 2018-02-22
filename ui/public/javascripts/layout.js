@@ -724,15 +724,25 @@ socket.on('searchResults', function (data) {
   var globalIsDrag = false;
   $('.result-text').bind({
     copy : function(){
-      console.log($(this).data('id'));
-      alert('copy behaviour detected!');
+      //What was selected
+      var text = window.getSelection().toString().replace(/[\n\r]+/g, '');
+      console.log(text);
+
+      /*
+
+      {
+        
+
+      }
+      */
+
       //Pass info.
       socket.emit('resultCopied', {selectedId: $(this).attr("data-uid")});
     },
     cut : function(){
-      console.log($(this).data('id'));
-      console.log('cut behaviour detected!');
-      alert('cut behaviour detected!');
+      var text = window.getSelection().toString().replace(/[\n\r]+/g, '');
+      console.log(text);
+
       socket.emit('resultCopied', {selectedId: $(this).attr("data-uid")});
     }
   });
