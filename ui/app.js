@@ -71,27 +71,33 @@ io.on('connection', function (socket) {
         str += chunk;
       });
       response.on('end', function () {
-        var finalObj = JSON.parse(str);
-        //Save search string to DB.
-        autoCompleteSearch.find({searchStr: searchObj.searchInput}, function (err, data){
-          if (err) return console.error(err);
-          if(data.length == 0){
-            var insertSearch = new autoCompleteSearch({searchStr: searchObj.searchInput, selectedNum: 0});
-            insertSearch.save(function (err, searchSaved) {
-              if (err) return console.error(err);
-            });
-          }
-        });
-        var findArray = [];
-        for (var i = 0; i < finalObj.data.length; i++) {
-          var agreementNum = finalObj.data[i].pdf_url.split('/').slice(-1)[0].split('.')[0];
-          findArray.push(agreementNum.substr(0,5) + "-" + agreementNum.substr(5,2));
-        };
-        filedataModel.find({agreementnumber:{$in:findArray}},{currentagreementindicator:1,agreementnumber:1, unionnameenglish:1,companyofficialnameeng:1}, function (err, doc){
-          socket.emit('searchMeta', doc);
-        });
-        //return serach results
-        socket.emit('searchResults', finalObj);
+        try{
+          var finalObj = JSON.parse(str);
+          //Save search string to DB.
+          autoCompleteSearch.find({searchStr: searchObj.searchInput}, function (err, data){
+            if (err) return console.error(err);
+            if(data.length == 0){
+              var insertSearch = new autoCompleteSearch({searchStr: searchObj.searchInput, selectedNum: 0});
+              insertSearch.save(function (err, searchSaved) {
+                if (err) return console.error(err);
+              });
+            }
+          });
+          var findArray = [];
+          for (var i = 0; i < finalObj.data.length; i++) {
+            var agreementNum = finalObj.data[i].pdf_url.split('/').slice(-1)[0].split('.')[0];
+            findArray.push(agreementNum.substr(0,5) + "-" + agreementNum.substr(5,2));
+          };
+          filedataModel.find({agreementnumber:{$in:findArray}},{currentagreementindicator:1,agreementnumber:1, unionnameenglish:1,companyofficialnameeng:1}, function (err, doc){
+            socket.emit('searchMeta', doc);
+          });
+          //return serach results
+          socket.emit('searchResults', finalObj);
+        }catch(e){
+          console.log("ERROR FOUND");
+          console.log(e);
+          socket.emit('pythonError', {fullLog:errorText, reason:1});
+        }
       });
     });
     req.on('error', function (e){
@@ -194,9 +200,15 @@ io.on('connection', function (socket) {
         str += chunk;
       });
       response.on('end', function () {
-        var finalObj = {data: JSON.parse(str), searchid:data.resultId};
-        //return serach results
-        socket.emit('returnNextIndexObj', finalObj);
+        try{
+          var finalObj = {data: JSON.parse(str), searchid:data.resultId};
+          //return serach results
+          socket.emit('returnNextIndexObj', finalObj);
+        }catch(e){
+          console.log("ERROR FOUND");
+          console.log(e);
+          socket.emit('pythonError', {fullLog:errorText, reason:2});
+        }
       });
     });
     req.on('error', function (e){

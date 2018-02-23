@@ -728,14 +728,6 @@ socket.on('searchResults', function (data) {
       var text = window.getSelection().toString().replace(/[\n\r]+/g, '');
       console.log(text);
 
-      /*
-
-      {
-        
-
-      }
-      */
-
       //Pass info.
       socket.emit('resultCopied', {selectedId: $(this).attr("data-uid")});
     },
@@ -897,7 +889,23 @@ socket.on('returnNextIndexObj', function(data){
 
 });
 
-
+socket.on('pythonError', function (data){
+  //hide loading gif
+  $("#loading-container").fadeOut(function(){
+    $(this).remove();
+  });
+  $("#error-modal").modal({dismissible: true});
+  if(data.reason == 1){
+    $("#error-modal-title").html("Error, Python dose not return JSON");
+  }else if(data.reason == 2){
+    $("#error-modal-title").html("Error, Index is not found.");
+  }else{
+    $("#error-modal-title").html("Error");
+  }
+  console.log(data.fullLog);
+  $("#error-modal-text").html(data.fullLog);
+  $("#error-modal").modal('open');
+});
 
 
 
