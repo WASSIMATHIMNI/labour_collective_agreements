@@ -408,13 +408,13 @@ socket.on('searchResults', function (data) {
     var tempPDFName = data.data[i].pdf_url.split('/');
     var agreementNum = data.data[i].pdf_url.split('/').slice(-1)[0].split('.')[0];
     var finalAgg = agreementNum.substr(0,5) + "-" + agreementNum.substr(5,2);
-  	//PDF List buttons
-  	var tempListHolder = "<div class='result-pdflist'>";
-  	tempListHolder += "<div class='pdflist-elements-selector prev'>Previous</div>";
-  	tempListHolder += "<div class='pdflist-elements active' data-indexid='"+data.indexes[i][0][0]+"' data-searchid='search-"+i+"'>&#9724;</div>";
-  	for (var k = 0; k < data.indexes[i][1].length; k++) {
-  	  tempListHolder += "<div class='pdflist-elements' data-indexid='"+data.indexes[i][1][k]+"' data-searchid='search-"+i+"'>&#9723;</div>";
-  	}
+    //PDF List buttons
+    var tempListHolder = "<div class='result-pdflist'>";
+    tempListHolder += "<div class='pdflist-elements-selector prev'>Previous</div>";
+    tempListHolder += "<div class='pdflist-elements active' data-indexid='"+data.indexes[i][0][0]+"' data-searchid='search-"+i+"'>&#9724;</div>";
+    for (var k = 0; k < data.indexes[i][1].length; k++) {
+      tempListHolder += "<div class='pdflist-elements' data-indexid='"+data.indexes[i][1][k]+"' data-searchid='search-"+i+"'>&#9723;</div>";
+    }
     if(data.indexes[i][1].length == 0){
       tempListHolder += "<div class='pdflist-elements-selector next'>Load More</div></div>";
     }else{
@@ -478,42 +478,42 @@ socket.on('searchResults', function (data) {
   }
   //Click next result buttons;
   $('.pdflist-elements-selector').click(function (){
-  	if($(this).hasClass('prev')){
-  	  //Previously
-  	  var listofPDF = $(this).parent().find('.pdflist-elements');
-  	  //if first element is not active. Else do nothing.
-  	  if(!$(listofPDF[0]).hasClass('active')){
-  	    for(var item = 0; item < listofPDF.length; item++){
-  	      if($(listofPDF[item]).hasClass('active') && (item-1) != listofPDF.length){
-    		    $(listofPDF[item]).html("&#9723;").removeClass('active');
+    if($(this).hasClass('prev')){
+      //Previously
+      var listofPDF = $(this).parent().find('.pdflist-elements');
+      //if first element is not active. Else do nothing.
+      if(!$(listofPDF[0]).hasClass('active')){
+        for(var item = 0; item < listofPDF.length; item++){
+          if($(listofPDF[item]).hasClass('active') && (item-1) != listofPDF.length){
+            $(listofPDF[item]).html("&#9723;").removeClass('active');
             //Change load more to next if possible.
             $(this).parent().find('.next').text('Next');
-    		    $(listofPDF[(item-1)]).html("&#9724;").addClass('active');
+            $(listofPDF[(item-1)]).html("&#9724;").addClass('active');
             socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item-1)]).data('indexid'), resultId:$(listofPDF[(item-1)]).data('searchid')});
             //Update page #
-    		    break;
-    		  }
-  	    }
-  	  }
-  	}else{
-  	  //Next
-  	  var listofPDF = $(this).parent().find('.pdflist-elements');
+            break;
+          }
+        }
+      }
+    }else{
+      //Next
+      var listofPDF = $(this).parent().find('.pdflist-elements');
       var loadMoreBool = true;
-  	  for(var item = 0; item < listofPDF.length; item++){
+      for(var item = 0; item < listofPDF.length; item++){
 
         if(item == (listofPDF.length-2)){
           $(this).parent().find('.next').text('Load More');
         }
 
-  	    if($(listofPDF[item]).hasClass('active') && (item+1) != listofPDF.length){
-    		  $(listofPDF[item]).html("&#9723;").removeClass('active');
-    		  $(listofPDF[(item+1)]).html("&#9724;").addClass('active');
-    		  socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item+1)]).data('indexid'), resultId:$(listofPDF[(item+1)]).data('searchid')});
+        if($(listofPDF[item]).hasClass('active') && (item+1) != listofPDF.length){
+          $(listofPDF[item]).html("&#9723;").removeClass('active');
+          $(listofPDF[(item+1)]).html("&#9724;").addClass('active');
+          socket.emit('grabNextIndex', {query:data.query, indexId:$(listofPDF[(item+1)]).data('indexid'), resultId:$(listofPDF[(item+1)]).data('searchid')});
           //Update page #
           loadMoreBool = false;
-    		  break;
-    		}
-  	  }
+          break;
+        }
+      }
       if(loadMoreBool){
 
         //No result found load the third array.
@@ -536,7 +536,7 @@ socket.on('searchResults', function (data) {
           socket.emit('grabNextIndex', {query:data.query, indexId:data.indexes[prevElement.data('searchid').split('-')[1]][2][tempIndex], resultId: "search-"+prevElement.data('searchid').split('-')[1]});
         }
       }
-  	}
+    }
   });
   $('.pdflist-elements').click(function (){
     var listofPDF = $(this).parent().find('.pdflist-elements');
@@ -881,8 +881,8 @@ socket.on('filterNamesReturn', function(data){
 socket.on('returnNextIndexObj', function(data){
   $("#"+data.searchid).find('.result-text').fadeOut(function (){
     var highlightedText = highlightText(data.data.data[0]);
-  	$(this).html(highlightedText);
-  	$(this).fadeIn();
+    $(this).html(highlightedText);
+    $(this).fadeIn();
   });
   $("#"+data.searchid).find('.metadatalink').fadeOut(function (){
     $(this).html("Page <b>"+data.data.data[0].metadata.split('-')[1]+"</b>");
@@ -891,6 +891,10 @@ socket.on('returnNextIndexObj', function(data){
   //change pdf link metadata
   //result-pdf
   $("#"+data.searchid).find('result-pdf').attr('data-pdfmeta', data.data.data[0].metadata);
+  
+  var pos = $("#"+data.searchid).offset().top -50;
+  $('html, body').animate({scrollTop:pos},300);
+
 });
 
 
